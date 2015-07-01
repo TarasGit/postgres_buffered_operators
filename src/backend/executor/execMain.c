@@ -1543,6 +1543,9 @@ ExecutePlanListQualTuple(EState *estate,
 			breakval = 1;
 			break;
 		}
+
+		if(slot->qual == 0)
+			continue;
 		/*
 		 * If we have a junk filter, then project a new tuple with the junk
 		 * removed.

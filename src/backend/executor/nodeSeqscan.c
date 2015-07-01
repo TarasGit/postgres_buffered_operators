@@ -75,7 +75,7 @@ SeqNextListQualTuple(SeqScanState *node)
 	tuple = heap_getnext(scandesc, direction);
 
 
-	memcpy(scandesc->rs_ctuplist + i,&scandesc->rs_ctup, sizectup);//Taras: what is faster memcpy or memmove ???[MYTODO]
+	memcpy(&scandesc->rs_ctuplist[i],&scandesc->rs_ctup, sizectup);//Taras: what is faster memcpy or memmove ???[MYTODO]
 	/*
 	 * save the tuple and the buffer returned to us by the access methods in
 	 * our scan tuple slot and return the slot.  Note: we pass 'false' because
@@ -286,8 +286,10 @@ ExecInitSeqScan(SeqScan *node, EState *estate, int eflags)
 	ExecInitResultTupleSlot(estate, &scanstate->ps);
 	ExecInitScanTupleSlot(estate, scanstate);
 
-	scanstate->ss_ScanTupleSlotList = MemoryContextAllocZero(CurrentMemoryContext, sizeof(TupleTableSlot*) * mybuffersize);//Taras: added
-	scanstate->ps.ps_ResultTupleSlotList = MemoryContextAllocZero(CurrentMemoryContext, sizeof(TupleTableSlot*) * mybuffersize);//Taras: added
+	scanstate->ss_ScanTupleSlotList = MemoryContextAllocZero(CurrentMemoryContext, sizeof(TupleTableSlot*) * mybuffersize);//Taras: added for Scan
+	scanstate->ps.ps_ResultTupleSlotList = MemoryContextAllocZero(CurrentMemoryContext, sizeof(TupleTableSlot*) * mybuffersize);//Taras: added for Proj
+	scanstate->resultlist =  MemoryContextAllocZero(CurrentMemoryContext, sizeof(TupleTableSlot*) * mybuffersize); //Taras: for output
+	scanstate->actualpos = mybuffersize;//Taras: added
 
 	ExecInitResultTupleSlotBuffer(estate, &scanstate->ps);//Taras: added
 	ExecInitScanTupleSlotBuffer(estate, scanstate);//Taras: added

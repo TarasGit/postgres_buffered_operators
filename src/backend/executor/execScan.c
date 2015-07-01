@@ -125,8 +125,14 @@ ExecScanListQualTuple(ScanState *node,
 	ProjectionInfo *projInfo;
 	ExprDoneCond isDone;
 	TupleTableSlot *resultSlot;
-	TupleTableSlot **resultSlotList;
+	TupleTableSlot **resultlist;
+	unsigned int actualpos;
+	unsigned int resultpos;
+	TupleTableSlot *slot;
 	TupleTableSlot **slotlist;
+
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
 
 	/*
 	 * Fetch data from node
@@ -134,6 +140,10 @@ ExecScanListQualTuple(ScanState *node,
 	qual = node->ps.qual;
 	projInfo = node->ps.ps_ProjInfo;
 	econtext = node->ps.ps_ExprContext;
+
+	 resultpos = mybuffersize;
+	 actualpos = node->actualpos;
+	 resultlist = node->resultlist;
 
 	/*
 	 * If we have neither a qual to check nor a projection to do, just skip
@@ -159,11 +169,15 @@ ExecScanListQualTuple(ScanState *node,
 	 */
 	for (;;)
 	{
-		TupleTableSlot *slot;
 
-		CHECK_FOR_INTERRUPTS();
 
-		slotlist = ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+		//CHECK_FOR_INTERRUPTS();
+
+		if(actualpos==0 || actualpos == mybuffersize){
+			slotlist = ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+			actualpos = mybuffersize;
+		}
+		slot = slotlist[--actualpos];
 
 		/*
 		 * if the slot returned by the accessMtd contains NULL, then it means
@@ -173,10 +187,8 @@ ExecScanListQualTuple(ScanState *node,
 		 */
 		if (TupIsNull(slot))
 		{
-			if (projInfo)
-				return ExecClearTuple(projInfo->pi_slot);
-			else
-				return slot;
+			resultlist[--resultpos] = slot;
+			return resultlist;
 		}
 
 		/*
@@ -203,29 +215,35 @@ ExecScanListQualTuple(ScanState *node,
 				 * and return it --- unless we find we can project no tuples
 				 * from this scan tuple, in which case continue scan.
 				 */
-				resultSlot = ExecProject(projInfo, &isDone);
-				if (isDone != ExprEndResult)
-				{
-					node->ps.ps_TupFromTlist = (isDone == ExprMultipleResult);
-					return resultSlot;
-				}
+				resultSlot = ExecProjectBuffer(projInfo, &isDone,--resultpos);
+				resultSlot->qual = 1;
+				resultlist[resultpos] = resultSlot;
 			}
 			else
 			{
 				/*
 				 * Here, we aren't projecting, so just return scan tuple.
 				 */
-				return slot;
+				slot->qual = 1;
+				resultlist[--resultpos] = slot;
 			}
-		}
-		else
+		}else{
 			InstrCountFiltered1(node, 1);
+			slot->qual = 0;
+			resultlist[--resultpos] = slot;
+		}
+
+		if(resultpos==0){
+			node->actualpos = actualpos;
+			return resultlist;
+		}
 
 		/*
 		 * Tuple fails qual, so free per-tuple memory and try again.
 		 */
 		ResetExprContext(econtext);
 	}
+	return resultlist;
 }
 
 TupleTableSlot *

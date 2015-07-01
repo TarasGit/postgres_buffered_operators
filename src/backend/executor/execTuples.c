@@ -363,7 +363,8 @@ ExecStoreTuple(HeapTuple tuple,
 	 * the pin is a waste of cycles.  This is a common situation during
 	 * seqscans, so it's worth troubling over.
 	 */
-	if (slot->tts_buffer != buffer)
+	//if (slot->tts_buffer != buffer)
+	if(0)
 	{
 		if (BufferIsValid(slot->tts_buffer))
 			ReleaseBuffer(slot->tts_buffer);

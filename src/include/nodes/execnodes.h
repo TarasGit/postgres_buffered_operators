@@ -1206,6 +1206,8 @@ typedef struct ScanState
 	HeapScanDesc ss_currentScanDesc;
 	TupleTableSlot *ss_ScanTupleSlot;
 	TupleTableSlot **ss_ScanTupleSlotList; //Taras:added
+	TupleTableSlot **resultlist;
+	unsigned int 	actualpos;
 } ScanState;
 
 /*

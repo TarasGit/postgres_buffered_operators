@@ -250,6 +250,9 @@ extern int	ExecCleanTargetListLength(List *targetlist);
 extern TupleTableSlot *ExecProject(ProjectionInfo *projInfo,
 			ExprDoneCond *isDone);
 
+extern TupleTableSlot *ExecProjectBuffer(ProjectionInfo *projInfo,
+			ExprDoneCond *isDone, unsigned int pos);
+
 /*
  * prototypes from functions in execScan.c
  */
