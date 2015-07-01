@@ -19,6 +19,9 @@
 extern HashState *ExecInitHash(Hash *node, EState *estate, int eflags);
 extern TupleTableSlot *ExecHash(HashState *node);
 extern Node *MultiExecHash(HashState *node);
+
+extern Node *MultiExecHashListQualTuple(HashState *node);//Taras: added
+
 extern void ExecEndHash(HashState *node);
 extern void ExecReScanHash(HashState *node);
 

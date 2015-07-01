@@ -70,8 +70,127 @@ ExecHash(HashState *node)
  *		than one batch is required.
  * ----------------------------------------------------------------
  */
+
+
 Node *
-MultiExecHash(HashState *node)
+MultiExecHashListQualTuple(HashState *node)//Taras: added
+{
+	PlanState  *outerNode;
+	List	   *hashkeys;
+	HashJoinTable hashtable;
+	TupleTableSlot *slot;
+	TupleTableSlot **slotlist;
+	ExprContext *econtext;
+	uint32		hashvalue;
+
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+	bool endloop = 0;
+
+
+	/* must provide our own instrumentation support */
+	if (node->ps.instrument)
+		InstrStartNode(node->ps.instrument);
+
+	/*
+	 * get state info from node
+	 */
+	outerNode = outerPlanState(node);
+	hashtable = node->hashtable;
+
+	/*
+	 * set expression context
+	 */
+	hashkeys = node->hashkeys;
+	econtext = node->ps.ps_ExprContext;
+
+	/*
+	 * get all inner tuples and insert into the hash table (or temp files)
+	 */
+	for (;;)
+	{
+		if(endloop)
+			break;
+
+		slotlist = ExecProcNodeListQualTuple(outerNode);
+
+		for(i=mybuffersize;i--;){
+
+			slot = slotlist[i];
+
+
+			if (TupIsNull(slot)){
+				endloop = 1;
+				break;
+			}
+
+
+			if(!slot->qual)
+				continue;
+
+
+			/* We have to compute the hash value */
+			econtext->ecxt_innertuple = slot;
+			if (ExecHashGetHashValue(hashtable, econtext, hashkeys,
+								 false, hashtable->keepNulls,
+								 &hashvalue))
+			{
+				int			bucketNumber;
+
+				bucketNumber = ExecHashGetSkewBucket(hashtable, hashvalue);
+				if (bucketNumber != INVALID_SKEW_BUCKET_NO)
+				{
+					/* It's a skew tuple, so put it into that hash table */
+					ExecHashSkewTableInsert(hashtable, slot, hashvalue, bucketNumber);
+					hashtable->skewTuples += 1;
+				}
+				else
+				{
+					/* Not subject to skew optimization, so insert normally */
+					ExecHashTableInsert(hashtable, slot, hashvalue);
+				}
+				hashtable->totalTuples += 1;
+			}
+		}//end for(i)
+	}//end for(;;)
+
+	/* resize the hash table if needed (NTUP_PER_BUCKET exceeded) */
+	if (hashtable->nbuckets != hashtable->nbuckets_optimal)
+	{
+		/* We never decrease the number of buckets. */
+		Assert(hashtable->nbuckets_optimal > hashtable->nbuckets);
+
+#ifdef HJDEBUG
+		printf("Increasing nbuckets %d => %d\n",
+			   hashtable->nbuckets, hashtable->nbuckets_optimal);
+#endif
+
+		ExecHashIncreaseNumBuckets(hashtable);
+	}
+
+	/* Account for the buckets in spaceUsed (reported in EXPLAIN ANALYZE) */
+	hashtable->spaceUsed += hashtable->nbuckets * sizeof(HashJoinTuple);
+	if (hashtable->spaceUsed > hashtable->spacePeak)
+		hashtable->spacePeak = hashtable->spaceUsed;
+
+	/* must provide our own instrumentation support */
+	if (node->ps.instrument)
+		InstrStopNode(node->ps.instrument, hashtable->totalTuples);
+
+	/*
+	 * We do not return the hash table directly because it's not a subtype of
+	 * Node, and so would violate the MultiExecProcNode API.  Instead, our
+	 * parent Hashjoin node is expected to know how to fish it out of our node
+	 * state.  Ugly but not really worth cleaning up, since Hashjoin knows
+	 * quite a bit more about Hash besides that.
+	 */
+	return NULL;
+}
+
+
+Node *
+MultiExecHash(HashState *node)//Taras: original - shall not change
 {
 	PlanState  *outerNode;
 	List	   *hashkeys;

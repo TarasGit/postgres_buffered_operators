@@ -115,6 +115,7 @@ ExecScanFetch(ScanState *node,
  */
 
 
+
 TupleTableSlot **
 ExecScanListQualTuple(ScanState *node,
 		 ExecScanAccessMtd accessMtd,	/* function returning a tuple */
@@ -129,7 +130,8 @@ ExecScanListQualTuple(ScanState *node,
 	unsigned int actualpos;
 	unsigned int resultpos;
 	TupleTableSlot *slot;
-	TupleTableSlot **slotlist;
+	TupleTableSlot **slotlist;//Taras: [MYTODO] soll return überleben, denn es enthaelt noch nicht verarbeitete Tupel
+
 
 	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;

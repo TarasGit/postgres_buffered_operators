@@ -120,19 +120,7 @@ make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/commands'
 make -C executor all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/executor'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeSeqscan.o nodeSeqscan.c -MMD -MP -MF .deps/nodeSeqscan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeSort.o nodeSort.c -MMD -MP -MF .deps/nodeSort.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeUnique.o nodeUnique.c -MMD -MP -MF .deps/nodeUnique.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeValuesscan.o nodeValuesscan.c -MMD -MP -MF .deps/nodeValuesscan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeCtescan.o nodeCtescan.c -MMD -MP -MF .deps/nodeCtescan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeWorktablescan.o nodeWorktablescan.c -MMD -MP -MF .deps/nodeWorktablescan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeGroup.o nodeGroup.c -MMD -MP -MF .deps/nodeGroup.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeSubplan.o nodeSubplan.c -MMD -MP -MF .deps/nodeSubplan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeSubqueryscan.o nodeSubqueryscan.c -MMD -MP -MF .deps/nodeSubqueryscan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeTidscan.o nodeTidscan.c -MMD -MP -MF .deps/nodeTidscan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeForeignscan.o nodeForeignscan.c -MMD -MP -MF .deps/nodeForeignscan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeWindowAgg.o nodeWindowAgg.c -MMD -MP -MF .deps/nodeWindowAgg.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o spi.o spi.c -MMD -MP -MF .deps/spi.Po
+gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o nodeHashjoin.o nodeHashjoin.c -MMD -MP -MF .deps/nodeHashjoin.Po
 touch objfiles.txt
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/executor'
 make -C foreign all
@@ -153,8 +141,7 @@ make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/main'
 make -C nodes all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/nodes'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o print.o print.c -MMD -MP -MF .deps/print.Po
-touch objfiles.txt
+make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/nodes'
 make -C optimizer all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/optimizer'
@@ -164,33 +151,20 @@ make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/optimizer/geqo'
 make -C path all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/optimizer/path'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o allpaths.o allpaths.c -MMD -MP -MF .deps/allpaths.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o costsize.o costsize.c -MMD -MP -MF .deps/costsize.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o joinpath.o joinpath.c -MMD -MP -MF .deps/joinpath.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/optimizer/path'
 make -C plan all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/optimizer/plan'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o createplan.o createplan.c -MMD -MP -MF .deps/createplan.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o planner.o planner.c -MMD -MP -MF .deps/planner.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o subselect.o subselect.c -MMD -MP -MF .deps/subselect.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/optimizer/plan'
 make -C prep all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/optimizer/prep'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o prepsecurity.o prepsecurity.c -MMD -MP -MF .deps/prepsecurity.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o preptlist.o preptlist.c -MMD -MP -MF .deps/preptlist.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o prepunion.o prepunion.c -MMD -MP -MF .deps/prepunion.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/optimizer/prep'
 make -C util all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/optimizer/util'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o clauses.o clauses.c -MMD -MP -MF .deps/clauses.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o plancat.o plancat.c -MMD -MP -MF .deps/plancat.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o predtest.o predtest.c -MMD -MP -MF .deps/predtest.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/optimizer/util'
-( cat geqo/objfiles.txt path/objfiles.txt plan/objfiles.txt prep/objfiles.txt util/objfiles.txt; echo  ) >objfiles.txt
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/optimizer'
 make -C port all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/port'
@@ -198,10 +172,7 @@ make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/port'
 make -C postmaster all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/postmaster'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o autovacuum.o autovacuum.c -MMD -MP -MF .deps/autovacuum.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o pgstat.o pgstat.c -MMD -MP -MF .deps/pgstat.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o postmaster.o postmaster.c -MMD -MP -MF .deps/postmaster.Po
-touch objfiles.txt
+make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/postmaster'
 make -C regex all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/regex'
@@ -211,22 +182,12 @@ make -C replication all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/replication'
 make -C logical all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/replication/logical'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I. -I../../../../src/include -D_GNU_SOURCE   -c -o decode.o decode.c -MMD -MP -MF .deps/decode.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I. -I../../../../src/include -D_GNU_SOURCE   -c -o logicalfuncs.o logicalfuncs.c -MMD -MP -MF .deps/logicalfuncs.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/replication/logical'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I. -I. -I../../../src/include -D_GNU_SOURCE   -c -o walsender.o walsender.c -MMD -MP -MF .deps/walsender.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I. -I. -I../../../src/include -D_GNU_SOURCE   -c -o slotfuncs.o slotfuncs.c -MMD -MP -MF .deps/slotfuncs.Po
-( cat logical/objfiles.txt; echo src/backend/replication/walsender.o src/backend/replication/walreceiverfuncs.o src/backend/replication/walreceiver.o src/backend/replication/basebackup.o src/backend/replication/repl_gram.o src/backend/replication/slot.o src/backend/replication/slotfuncs.o src/backend/replication/syncrep.o ) >objfiles.txt
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/replication'
 make -C rewrite all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/rewrite'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o rewriteRemove.o rewriteRemove.c -MMD -MP -MF .deps/rewriteRemove.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o rewriteDefine.o rewriteDefine.c -MMD -MP -MF .deps/rewriteDefine.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o rewriteHandler.o rewriteHandler.c -MMD -MP -MF .deps/rewriteHandler.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o rewriteSupport.o rewriteSupport.c -MMD -MP -MF .deps/rewriteSupport.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o rowsecurity.o rowsecurity.c -MMD -MP -MF .deps/rowsecurity.Po
-touch objfiles.txt
+make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/rewrite'
 make -C storage all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/storage'
@@ -244,13 +205,11 @@ make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/storage/freespace'
 make -C ipc all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/storage/ipc'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o ipci.o ipci.c -MMD -MP -MF .deps/ipci.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/storage/ipc'
 make -C large_object all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/storage/large_object'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o inv_api.o inv_api.c -MMD -MP -MF .deps/inv_api.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/storage/large_object'
 make -C lmgr all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/storage/lmgr'
@@ -264,68 +223,24 @@ make -C smgr all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/storage/smgr'
 make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/storage/smgr'
-( cat buffer/objfiles.txt file/objfiles.txt freespace/objfiles.txt ipc/objfiles.txt large_object/objfiles.txt lmgr/objfiles.txt page/objfiles.txt smgr/objfiles.txt; echo  ) >objfiles.txt
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/storage'
 make -C tcop all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/tcop'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o dest.o dest.c -MMD -MP -MF .deps/dest.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o postgres.o postgres.c -MMD -MP -MF .deps/postgres.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o pquery.o pquery.c -MMD -MP -MF .deps/pquery.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o utility.o utility.c -MMD -MP -MF .deps/utility.Po
-touch objfiles.txt
+make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/tcop'
 make -C tsearch all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/tsearch'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../src/include -D_GNU_SOURCE   -c -o wparser.o wparser.c -MMD -MP -MF .deps/wparser.Po
-touch objfiles.txt
+make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/tsearch'
 make -C utils all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/backend/utils'
 make -C adt all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/adt'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o acl.o acl.c -MMD -MP -MF .deps/acl.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o arrayfuncs.o arrayfuncs.c -MMD -MP -MF .deps/arrayfuncs.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o datetime.o datetime.c -MMD -MP -MF .deps/datetime.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o dbsize.o dbsize.c -MMD -MP -MF .deps/dbsize.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o domains.o domains.c -MMD -MP -MF .deps/domains.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o enum.o enum.c -MMD -MP -MF .deps/enum.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o genfile.o genfile.c -MMD -MP -MF .deps/genfile.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o int.o int.c -MMD -MP -MF .deps/int.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o int8.o int8.c -MMD -MP -MF .deps/int8.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o json.o json.c -MMD -MP -MF .deps/json.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o jsonfuncs.o jsonfuncs.c -MMD -MP -MF .deps/jsonfuncs.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o lockfuncs.o lockfuncs.c -MMD -MP -MF .deps/lockfuncs.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o misc.o misc.c -MMD -MP -MF .deps/misc.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o numeric.o numeric.c -MMD -MP -MF .deps/numeric.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o orderedsetaggs.o orderedsetaggs.c -MMD -MP -MF .deps/orderedsetaggs.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o pg_lsn.o pg_lsn.c -MMD -MP -MF .deps/pg_lsn.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o pgstatfuncs.o pgstatfuncs.c -MMD -MP -MF .deps/pgstatfuncs.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o regexp.o regexp.c -MMD -MP -MF .deps/regexp.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o regproc.o regproc.c -MMD -MP -MF .deps/regproc.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o ri_triggers.o ri_triggers.c -MMD -MP -MF .deps/ri_triggers.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o rowtypes.o rowtypes.c -MMD -MP -MF .deps/rowtypes.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o ruleutils.o ruleutils.c -MMD -MP -MF .deps/ruleutils.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o selfuncs.o selfuncs.c -MMD -MP -MF .deps/selfuncs.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o tid.o tid.c -MMD -MP -MF .deps/tid.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o timestamp.o timestamp.c -MMD -MP -MF .deps/timestamp.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o trigfuncs.o trigfuncs.c -MMD -MP -MF .deps/trigfuncs.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o tsquery_rewrite.o tsquery_rewrite.c -MMD -MP -MF .deps/tsquery_rewrite.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o tsvector_op.o tsvector_op.c -MMD -MP -MF .deps/tsvector_op.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o txid.o txid.c -MMD -MP -MF .deps/txid.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o xml.o xml.c -MMD -MP -MF .deps/xml.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/adt'
 make -C cache all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/cache'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o catcache.o catcache.c -MMD -MP -MF .deps/catcache.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o evtcache.o evtcache.c -MMD -MP -MF .deps/evtcache.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o plancache.o plancache.c -MMD -MP -MF .deps/plancache.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o relcache.o relcache.c -MMD -MP -MF .deps/relcache.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o relfilenodemap.o relfilenodemap.c -MMD -MP -MF .deps/relfilenodemap.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o lsyscache.o lsyscache.c -MMD -MP -MF .deps/lsyscache.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o typcache.o typcache.c -MMD -MP -MF .deps/typcache.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o ts_cache.o ts_cache.c -MMD -MP -MF .deps/ts_cache.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/cache'
 make -C error all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/error'
@@ -333,9 +248,7 @@ make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/error'
 make -C fmgr all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/fmgr'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE  -DDLSUFFIX=\".so\"  -c -o fmgr.o fmgr.c -MMD -MP -MF .deps/fmgr.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE  -DDLSUFFIX=\".so\"  -c -o funcapi.o funcapi.c -MMD -MP -MF .deps/funcapi.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/fmgr'
 make -C hash all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/hash'
@@ -343,8 +256,7 @@ make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/hash'
 make -C init all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/init'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o postinit.o postinit.c -MMD -MP -MF .deps/postinit.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/init'
 make -C mb all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/mb'
@@ -352,13 +264,11 @@ make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/mb'
 make -C misc all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/misc'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o guc.o guc.c -MMD -MP -MF .deps/guc.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/misc'
 make -C mmgr all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/mmgr'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I../../../../src/include -D_GNU_SOURCE   -c -o portalmem.o portalmem.c -MMD -MP -MF .deps/portalmem.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/mmgr'
 make -C resowner all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/resowner'
@@ -366,15 +276,12 @@ make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/resowner'
 make -C sort all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/sort'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o tuplesort.o tuplesort.c -MMD -MP -MF .deps/tuplesort.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o tuplestore.o tuplestore.c -MMD -MP -MF .deps/tuplestore.Po
-touch objfiles.txt
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/sort'
 make -C time all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/backend/utils/time'
 make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils/time'
-( cat adt/objfiles.txt cache/objfiles.txt error/objfiles.txt fmgr/objfiles.txt hash/objfiles.txt init/objfiles.txt mb/objfiles.txt misc/objfiles.txt mmgr/objfiles.txt resowner/objfiles.txt sort/objfiles.txt time/objfiles.txt; echo src/backend/utils/fmgrtab.o ) >objfiles.txt
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/backend/utils'
 make -C ../../src/timezone all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/timezone'
@@ -763,13 +670,7 @@ make -C plpgsql all
 make[3]: Entering directory `/home/taras/project2/pgsql/src/pl/plpgsql'
 make -C src all
 make[4]: Entering directory `/home/taras/project2/pgsql/src/pl/plpgsql/src'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o pl_gram.o pl_gram.c -MMD -MP -MF .deps/pl_gram.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o pl_handler.o pl_handler.c -MMD -MP -MF .deps/pl_handler.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o pl_comp.o pl_comp.c -MMD -MP -MF .deps/pl_comp.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o pl_exec.o pl_exec.c -MMD -MP -MF .deps/pl_exec.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o pl_funcs.o pl_funcs.c -MMD -MP -MF .deps/pl_funcs.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -I. -I. -I../../../../src/include -D_GNU_SOURCE   -c -o pl_scanner.o pl_scanner.c -MMD -MP -MF .deps/pl_scanner.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -shared -o plpgsql.so pl_gram.o pl_handler.o pl_comp.o pl_exec.o pl_funcs.o pl_scanner.o  -L../../../../src/port -L../../../../src/common -Wl,--as-needed    
+make[4]: Nothing to be done for `all'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/pl/plpgsql/src'
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/pl/plpgsql'
 make[2]: Leaving directory `/home/taras/project2/pgsql/src/pl'
@@ -793,22 +694,11 @@ make[4]: Entering directory `/home/taras/project2/pgsql/src/backend'
 make[4]: Nothing to be done for `submake-errcodes'.
 make[4]: Leaving directory `/home/taras/project2/pgsql/src/backend'
 make[3]: Leaving directory `/home/taras/project2/pgsql/src/common'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -I../../../src/include -D_GNU_SOURCE   -c -o regress.o regress.c -MMD -MP -MF .deps/regress.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -shared -o regress.so  regress.o -L../../../src/port -L../../../src/common -Wl,--as-needed -Wl,-rpath,'/home/taras/project2/lib',--enable-new-dtags  
 make -C ../../../contrib/spi
 make[3]: Entering directory `/home/taras/project2/pgsql/contrib/spi'
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -DREFINT_VERBOSE -I. -I. -I../../src/include -D_GNU_SOURCE   -c -o autoinc.o autoinc.c -MMD -MP -MF .deps/autoinc.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -L../../src/port -L../../src/common -Wl,--as-needed -Wl,-rpath,'/home/taras/project2/lib',--enable-new-dtags -L../../src/port -lpgport  -shared -o autoinc.so autoinc.o
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -DREFINT_VERBOSE -I. -I. -I../../src/include -D_GNU_SOURCE   -c -o insert_username.o insert_username.c -MMD -MP -MF .deps/insert_username.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -L../../src/port -L../../src/common -Wl,--as-needed -Wl,-rpath,'/home/taras/project2/lib',--enable-new-dtags -L../../src/port -lpgport  -shared -o insert_username.so insert_username.o
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -DREFINT_VERBOSE -I. -I. -I../../src/include -D_GNU_SOURCE   -c -o moddatetime.o moddatetime.c -MMD -MP -MF .deps/moddatetime.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -L../../src/port -L../../src/common -Wl,--as-needed -Wl,-rpath,'/home/taras/project2/lib',--enable-new-dtags -L../../src/port -lpgport  -shared -o moddatetime.so moddatetime.o
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -DREFINT_VERBOSE -I. -I. -I../../src/include -D_GNU_SOURCE   -c -o refint.o refint.c -MMD -MP -MF .deps/refint.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -L../../src/port -L../../src/common -Wl,--as-needed -Wl,-rpath,'/home/taras/project2/lib',--enable-new-dtags -L../../src/port -lpgport  -shared -o refint.so refint.o
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -DREFINT_VERBOSE -I. -I. -I../../src/include -D_GNU_SOURCE   -c -o timetravel.o timetravel.c -MMD -MP -MF .deps/timetravel.Po
-gcc -Wall -Wmissing-prototypes -Wpointer-arith -Wdeclaration-after-statement -Wendif-labels -Wmissing-format-attribute -Wformat-security -fno-strict-aliasing -fwrapv -fexcess-precision=standard -g -ggdb -Og -fno-omit-frame-pointer -fpic -L../../src/port -L../../src/common -Wl,--as-needed -Wl,-rpath,'/home/taras/project2/lib',--enable-new-dtags -L../../src/port -lpgport  -shared -o timetravel.so timetravel.o
+make[3]: Nothing to be done for `all'.
 make[3]: Leaving directory `/home/taras/project2/pgsql/contrib/spi'
-cp ../../../contrib/spi/autoinc.so autoinc.so
+cp ../../../contrib/spi/refint.so refint.so
 make[2]: Leaving directory `/home/taras/project2/pgsql/src/test/regress'
 make[1]: Leaving directory `/home/taras/project2/pgsql/src'
 make -C config all

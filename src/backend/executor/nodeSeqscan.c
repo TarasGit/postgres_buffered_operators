@@ -76,6 +76,8 @@ SeqNextListQualTuple(SeqScanState *node)
 
 
 	memcpy(&scandesc->rs_ctuplist[i],&scandesc->rs_ctup, sizectup);//Taras: what is faster memcpy or memmove ???[MYTODO]
+
+	slotlist[i]->qual = 1;
 	/*
 	 * save the tuple and the buffer returned to us by the access methods in
 	 * our scan tuple slot and return the slot.  Note: we pass 'false' because
@@ -84,15 +86,17 @@ SeqNextListQualTuple(SeqScanState *node)
 	 * that ExecStoreTuple will increment the refcount of the buffer; the
 	 * refcount will not be dropped until the tuple table slot is cleared.
 	 */
-	if (tuple)
-		ExecStoreTuple(&scandesc->rs_ctuplist[i],	/* tuple to store */
+		if (tuple){
+			ExecStoreTuple(&scandesc->rs_ctuplist[i],	/* tuple to store */
 					   slotlist[i],	/* slot to store in */
 					   scandesc->rs_cbuf,		/* buffer associated with this
 												 * tuple */
 					   false);	/* don't pfree this pointer */
-	else
-		ExecClearTuple(slotlist[i]);
 
+		}else{
+			ExecClearTuple(slotlist[i]);
+			break;
+		}
 	}
 	return slotlist;
 }

@@ -1673,6 +1673,7 @@ typedef struct HashJoinState
 	int			hj_CurSkewBucketNo;
 	HashJoinTuple hj_CurTuple;
 	TupleTableSlot *hj_OuterTupleSlot;
+	TupleTableSlot **hj_OuterTupleSlotList; //Taras: added
 	TupleTableSlot *hj_HashTupleSlot;
 	TupleTableSlot *hj_NullOuterTupleSlot;
 	TupleTableSlot *hj_NullInnerTupleSlot;
@@ -1680,6 +1681,9 @@ typedef struct HashJoinState
 	int			hj_JoinState;
 	bool		hj_MatchedOuter;
 	bool		hj_OuterNotEmpty;
+	uint32 		*hashvaluelist;//Taras: added
+	TupleTableSlot **resultlist;//Taras: added
+	unsigned int	actualpos;
 } HashJoinState;
 
 

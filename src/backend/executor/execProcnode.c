@@ -331,16 +331,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 	 * Initialize any initPlans present in this node.  The planner put them in
 	 * a separate list for us.
 	 */
-	subps = NIL;
-	foreach(l, node->initPlan)
-	{
-		SubPlan    *subplan = (SubPlan *) lfirst(l);
-		SubPlanState *sstate;
 
-		Assert(IsA(subplan, SubPlan));
-		sstate = ExecInitSubPlan(subplan, result);
-		subps = lappend(subps, sstate);
-	}
 	result->initPlan = subps;
 
 	/* Set up instrumentation for this node if requested */
@@ -378,7 +369,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  			resultlist = ExecSeqScanListQualTuple((SeqScanState *) node);
  			break;
  		case T_HashJoinState:
- 			resultlist = ExecHashJoin((HashJoinState *) node);
+ 			resultlist = ExecHashJoinListQualTuple((HashJoinState *) node);
  			break;
 
  		case T_SortState:
@@ -588,8 +579,40 @@ ExecProcNode(PlanState *node) //Taras: original - shall not change
  * function must provide its own instrumentation support.
  * ----------------------------------------------------------------
  */
+
+
 Node *
-MultiExecProcNode(PlanState *node)
+MultiExecProcNodeListQualTuple(PlanState *node)
+{
+	Node	   *result;
+
+	CHECK_FOR_INTERRUPTS();
+
+	if (node->chgParam != NULL) /* something changed */
+		ExecReScan(node);		/* let ReScan handle this */
+
+	switch (nodeTag(node))
+	{
+			/*
+			 * Only node types that actually support multiexec will be listed
+			 */
+
+		case T_HashState:
+			result = MultiExecHashListQualTuple((HashState *) node);
+			break;
+
+		default:
+			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(node));
+			result = NULL;
+			break;
+	}
+
+	return result;
+}
+
+
+Node *
+MultiExecProcNode(PlanState *node)//TAras: original - shall not change
 {
 	Node	   *result;
 

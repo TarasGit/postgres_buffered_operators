@@ -226,6 +226,9 @@ extern TupleTableSlot *ExecProcNode(PlanState *node);
 extern TupleTableSlot **ExecProcNodeListQualTuple(PlanState *node);//Taras: added
 
 extern Node *MultiExecProcNode(PlanState *node);
+
+extern Node *MultiExecProcNodeListQualTuple(PlanState *node);
+
 extern void ExecEndNode(PlanState *node);
 
 /*
