@@ -56,6 +56,8 @@ SeqNextListQualTuple(SeqScanState *node)
 	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 	unsigned int i;
+	int sizectup = sizeof(scandesc->rs_ctup);
+
 
 	/*
 	 * get information from the estate and scan state
@@ -72,6 +74,8 @@ SeqNextListQualTuple(SeqScanState *node)
 	 */
 	tuple = heap_getnext(scandesc, direction);
 
+
+	memcpy(scandesc->rs_ctuplist + i,&scandesc->rs_ctup, sizectup);//Taras: what is faster memcpy or memmove ???[MYTODO]
 	/*
 	 * save the tuple and the buffer returned to us by the access methods in
 	 * our scan tuple slot and return the slot.  Note: we pass 'false' because
@@ -81,7 +85,7 @@ SeqNextListQualTuple(SeqScanState *node)
 	 * refcount will not be dropped until the tuple table slot is cleared.
 	 */
 	if (tuple)
-		ExecStoreTuple(tuple,	/* tuple to store */
+		ExecStoreTuple(&scandesc->rs_ctuplist[i],	/* tuple to store */
 					   slotlist[i],	/* slot to store in */
 					   scandesc->rs_cbuf,		/* buffer associated with this
 												 * tuple */
@@ -179,7 +183,7 @@ ExecSeqScanListQualTuple(SeqScanState *node)
  *		Set up to access the scan relation.
  * ----------------------------------------------------------------
  */
-static void
+static void //Taras: is not used
 InitScanRelation(SeqScanState *node, EState *estate, int eflags)//Taras: original - shall not change
 {
 	Relation	currentRelation;
@@ -221,7 +225,7 @@ InitScanRelationBuffer(SeqScanState *node, EState *estate, int eflags)//Taras: o
 										   eflags);
 
 	/* initialize a heapscan */
-	currentScanDesc = heap_beginscan(currentRelation,
+	currentScanDesc = heap_beginscanbuffer(currentRelation,//Taras: changed
 									 estate->es_snapshot,
 									 0,
 									 NULL);

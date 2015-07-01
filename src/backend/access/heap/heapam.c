@@ -81,6 +81,15 @@ static HeapScanDesc heap_beginscan_internal(Relation relation,
 						int nkeys, ScanKey key,
 						bool allow_strat, bool allow_sync,
 						bool is_bitmapscan, bool temp_snap);
+
+
+
+static HeapScanDesc heap_beginscan_internal_Buffer(Relation relation,
+						Snapshot snapshot,
+						int nkeys, ScanKey key,
+						bool allow_strat, bool allow_sync,
+						bool is_bitmapscan, bool temp_snap);
+
 static HeapTuple heap_prepare_insert(Relation relation, HeapTuple tup,
 					TransactionId xid, CommandId cid, int options);
 static XLogRecPtr log_heap_update(Relation reln, Buffer oldbuf,
@@ -204,8 +213,115 @@ static const int MultiXactStatusLock[MaxMultiXactStatus + 1] =
  *		initscan - scan code common to heap_beginscan and heap_rescan
  * ----------------
  */
+
+
 static void
-initscan(HeapScanDesc scan, ScanKey key, bool is_rescan)
+initscanBuffer(HeapScanDesc scan, ScanKey key, bool is_rescan)
+{
+	bool		allow_strat;
+	bool		allow_sync;
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+
+	/*
+	 * Determine the number of blocks we have to scan.
+	 *
+	 * It is sufficient to do this once at scan start, since any tuples added
+	 * while the scan is in progress will be invisible to my snapshot anyway.
+	 * (That is not true when using a non-MVCC snapshot.  However, we couldn't
+	 * guarantee to return tuples added after scan start anyway, since they
+	 * might go into pages we already scanned.  To guarantee consistent
+	 * results for a non-MVCC snapshot, the caller must hold some higher-level
+	 * lock that ensures the interesting tuple(s) won't change.)
+	 */
+	scan->rs_nblocks = RelationGetNumberOfBlocks(scan->rs_rd);
+
+	/*
+	 * If the table is large relative to NBuffers, use a bulk-read access
+	 * strategy and enable synchronized scanning (see syncscan.c).  Although
+	 * the thresholds for these features could be different, we make them the
+	 * same so that there are only two behaviors to tune rather than four.
+	 * (However, some callers need to be able to disable one or both of these
+	 * behaviors, independently of the size of the table; also there is a GUC
+	 * variable that can disable synchronized scanning.)
+	 *
+	 * During a rescan, don't make a new strategy object if we don't have to.
+	 */
+	if (!RelationUsesLocalBuffers(scan->rs_rd) &&
+		scan->rs_nblocks > NBuffers / 4)
+	{
+		allow_strat = scan->rs_allow_strat;
+		allow_sync = scan->rs_allow_sync;
+	}
+	else
+		allow_strat = allow_sync = false;
+
+	if (allow_strat)
+	{
+		if (scan->rs_strategy == NULL)
+			scan->rs_strategy = GetAccessStrategy(BAS_BULKREAD);
+	}
+	else
+	{
+		if (scan->rs_strategy != NULL)
+			FreeAccessStrategy(scan->rs_strategy);
+		scan->rs_strategy = NULL;
+	}
+
+	if (is_rescan)
+	{
+		/*
+		 * If rescan, keep the previous startblock setting so that rewinding a
+		 * cursor doesn't generate surprising results.  Reset the syncscan
+		 * setting, though.
+		 */
+		scan->rs_syncscan = (allow_sync && synchronize_seqscans);
+	}
+	else if (allow_sync && synchronize_seqscans)
+	{
+		scan->rs_syncscan = true;
+		scan->rs_startblock = ss_get_location(scan->rs_rd, scan->rs_nblocks);
+	}
+	else
+	{
+		scan->rs_syncscan = false;
+		scan->rs_startblock = 0;
+	}
+
+	scan->rs_initblock = 0;
+	scan->rs_numblocks = InvalidBlockNumber;
+	scan->rs_inited = false;
+
+	scan->rs_ctup.t_data = NULL;
+	ItemPointerSetInvalid(&scan->rs_ctup.t_self);
+
+	for(i=mybuffersize;i--;){//Taras: added
+		scan->rs_ctuplist[i].t_data = NULL;
+		ItemPointerSetInvalid(&scan->rs_ctuplist[i].t_self);
+	}
+
+	scan->rs_cbuf = InvalidBuffer;
+	scan->rs_cblock = InvalidBlockNumber;
+
+	/* page-at-a-time fields are always invalid when not rs_inited */
+
+	/*
+	 * copy the scan key, if appropriate
+	 */
+	if (key != NULL)
+		memcpy(scan->rs_key, key, scan->rs_nkeys * sizeof(ScanKeyData));
+
+	/*
+	 * Currently, we don't have a stats counter for bitmap heap scans (but the
+	 * underlying bitmap index scans will be counted).
+	 */
+	if (!scan->rs_bitmapscan)
+		pgstat_count_heap_scan(scan->rs_rd);
+}
+
+static void
+initscan(HeapScanDesc scan, ScanKey key, bool is_rescan)//Taras: original - shall not change
 {
 	bool		allow_strat;
 	bool		allow_sync;
@@ -1308,6 +1424,14 @@ heap_beginscan(Relation relation, Snapshot snapshot,
 }
 
 HeapScanDesc
+heap_beginscanbuffer(Relation relation, Snapshot snapshot,
+			   int nkeys, ScanKey key)
+{
+	return heap_beginscan_internal_Buffer(relation, snapshot, nkeys, key,
+								   true, true, false, false);
+}
+
+HeapScanDesc
 heap_beginscan_catalog(Relation relation, int nkeys, ScanKey key)
 {
 	Oid			relid = RelationGetRelid(relation);
@@ -1335,7 +1459,83 @@ heap_beginscan_bm(Relation relation, Snapshot snapshot,
 }
 
 static HeapScanDesc
-heap_beginscan_internal(Relation relation, Snapshot snapshot,
+heap_beginscan_internal_Buffer(Relation relation, Snapshot snapshot,//Taras: added
+						int nkeys, ScanKey key,
+						bool allow_strat, bool allow_sync,
+						bool is_bitmapscan, bool temp_snap)
+{
+	HeapScanDesc scan;
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+
+	/*
+	 * increment relation ref count while scanning relation
+	 *
+	 * This is just to make really sure the relcache entry won't go away while
+	 * the scan has a pointer to it.  Caller should be holding the rel open
+	 * anyway, so this is redundant in all normal scenarios...
+	 */
+	RelationIncrementReferenceCount(relation);
+
+	/*
+	 * allocate and initialize scan descriptor
+	 */
+	scan = (HeapScanDesc) palloc(sizeof(HeapScanDescData));
+
+	scan->rs_ctuplist = (HeapTupleData*)palloc(sizeof(HeapTupleData) * mybuffersize);//Taras: added
+
+	scan->rs_rd = relation;
+	scan->rs_snapshot = snapshot;
+	scan->rs_nkeys = nkeys;
+	scan->rs_bitmapscan = is_bitmapscan;
+	scan->rs_strategy = NULL;	/* set in initscan */
+	scan->rs_allow_strat = allow_strat;
+	scan->rs_allow_sync = allow_sync;
+	scan->rs_temp_snap = temp_snap;
+
+	/*
+	 * we can use page-at-a-time mode if it's an MVCC-safe snapshot
+	 */
+	scan->rs_pageatatime = IsMVCCSnapshot(snapshot);
+
+	/*
+	 * For a seqscan in a serializable transaction, acquire a predicate lock
+	 * on the entire relation. This is required not only to lock all the
+	 * matching tuples, but also to conflict with new insertions into the
+	 * table. In an indexscan, we take page locks on the index pages covering
+	 * the range specified in the scan qual, but in a heap scan there is
+	 * nothing more fine-grained to lock. A bitmap scan is a different story,
+	 * there we have already scanned the index and locked the index pages
+	 * covering the predicate. But in that case we still have to lock any
+	 * matching heap tuples.
+	 */
+	if (!is_bitmapscan)
+		PredicateLockRelation(relation, snapshot);
+
+	/* we only need to set this up once */
+	scan->rs_ctup.t_tableOid = RelationGetRelid(relation);
+
+	for(i=mybuffersize;i--;)
+		scan->rs_ctuplist[i].t_tableOid = RelationGetRelid(relation);//Taras: added
+
+	/*
+	 * we do this here instead of in initscan() because heap_rescan also calls
+	 * initscan() and we don't want to allocate memory again
+	 */
+	if (nkeys > 0)
+		scan->rs_key = (ScanKey) palloc(sizeof(ScanKeyData) * nkeys);
+	else
+		scan->rs_key = NULL;
+
+	initscanBuffer(scan, key, false);
+
+	return scan;
+}
+
+
+static HeapScanDesc
+heap_beginscan_internal(Relation relation, Snapshot snapshot,//Taras: original - shall not change
 						int nkeys, ScanKey key,
 						bool allow_strat, bool allow_sync,
 						bool is_bitmapscan, bool temp_snap)

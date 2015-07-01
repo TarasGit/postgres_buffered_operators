@@ -106,6 +106,11 @@ typedef struct HeapScanDescData *HeapScanDesc;
 
 extern HeapScanDesc heap_beginscan(Relation relation, Snapshot snapshot,
 			   int nkeys, ScanKey key);
+
+
+extern HeapScanDesc heap_beginscanbuffer(Relation relation, Snapshot snapshot,//Taras: added
+			   int nkeys, ScanKey key);
+
 extern HeapScanDesc heap_beginscan_catalog(Relation relation, int nkeys,
 					   ScanKey key);
 extern HeapScanDesc heap_beginscan_strat(Relation relation, Snapshot snapshot,

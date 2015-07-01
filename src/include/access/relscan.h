@@ -45,6 +45,7 @@ typedef struct HeapScanDescData
 	/* scan current state */
 	bool		rs_inited;		/* false = scan not init'd yet */
 	HeapTupleData rs_ctup;		/* current tuple in scan, if any */
+	HeapTupleData *rs_ctuplist; //Taras: added
 	BlockNumber rs_cblock;		/* current block # in scan, if any */
 	Buffer		rs_cbuf;		/* current buffer in scan, if any */
 	/* NB: if rs_cbuf is not InvalidBuffer, we hold a pin on that buffer */
