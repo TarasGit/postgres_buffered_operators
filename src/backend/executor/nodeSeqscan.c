@@ -98,7 +98,7 @@ SeqNextListQualTuple(SeqScanState *node)
 			break;
 		}
 	}
-	return slotlist;
+	return node->ss_ScanTupleSlotList;
 }
 
 static TupleTableSlot * //Taras: original - shall not change

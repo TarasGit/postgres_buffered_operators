@@ -432,6 +432,8 @@ ExecHashJoin(HashJoinState *node) //Taras: original - shall not change
 }
 
 
+TupleTableSlot **outerTupleSlotList;
+
 
 TupleTableSlot **			/* return: a tuple or NULL */
 ExecHashJoinListQualTuple(HashJoinState *node) //Taras: added
@@ -445,7 +447,6 @@ ExecHashJoinListQualTuple(HashJoinState *node) //Taras: added
 	HashJoinTable hashtable;
 	TupleTableSlot *outerTupleSlot;
 	TupleTableSlot **resultlist;
-	TupleTableSlot **outerTupleSlotList;
 
 	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;

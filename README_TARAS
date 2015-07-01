@@ -1,0 +1,11 @@
+#1.Change Buffer Size for ScanNode - works only for select *
+/src/backend/access/mybuffer/mybuffer.c
+
+#2.Configure project
+1. normal: ./configure --prefix=$HOME/project --enable-depend --enable-cassert --enable-debug
+2. debug:  ./configure --enable-cassert --enable-debug CFLAGS="-ggdb -Og -fno-omit-frame-pointer"
+
+#3.Install to $HOME/project
+make all -j4
+make install
+

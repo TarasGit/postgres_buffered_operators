@@ -34,12 +34,14 @@ static bool tlist_matches_tupdesc(PlanState *ps, List *tlist, Index varno, Tuple
  * the access method's next-tuple routine.
  */
 
-static inline TupleTableSlot **
+TupleTableSlot **
 ExecScanFetchListQualTuple(ScanState *node,
 			  ExecScanAccessMtd accessMtd,
 			  ExecScanRecheckMtd recheckMtd)
 {
-	return SeqNextListQualTuple(node);
+	TupleTableSlot **tts;
+	tts = SeqNextListQualTuple(node);
+	return tts;
 }
 
 static inline TupleTableSlot * //Taras: original - shall not change!
@@ -154,7 +156,9 @@ ExecScanListQualTuple(ScanState *node,
 	if (!qual && !projInfo)
 	{
 		ResetExprContext(econtext);
-		return ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+		//return ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+		SeqNextListQualTuple(node);
+		return node->ss_ScanTupleSlotList;
 	}
 
 
@@ -176,9 +180,13 @@ ExecScanListQualTuple(ScanState *node,
 		//CHECK_FOR_INTERRUPTS();
 
 		if(actualpos==0 || actualpos == mybuffersize){
-			slotlist = ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+			//ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+			SeqNextListQualTuple(node);
+			//slotlist = SeqNextListQualTuple(node);
+			slotlist = node->ss_ScanTupleSlotList;
 			actualpos = mybuffersize;
 		}
+
 		slot = slotlist[--actualpos];
 
 		/*

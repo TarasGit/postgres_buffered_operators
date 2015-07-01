@@ -267,6 +267,10 @@ extern TupleTableSlot *ExecScan(ScanState *node, ExecScanAccessMtd accessMtd,
 extern TupleTableSlot **ExecScanListQualTuple(ScanState *node, ExecScanAccessMtd accessMtd,
 		 ExecScanRecheckMtd recheckMtd);
 
+
+extern TupleTableSlot ** ExecScanFetchListQualTuple(ScanState *node,//TAras: added
+			  ExecScanAccessMtd accessMtd,
+			  ExecScanRecheckMtd recheckMtd);
 extern void ExecAssignScanProjectionInfo(ScanState *node);
 extern void ExecAssignScanProjectionInfoBuffer(ScanState *node);//Taras: added
 
