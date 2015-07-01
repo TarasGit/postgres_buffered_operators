@@ -28,6 +28,7 @@
 #include "utils/rel.h"
 
 static void InitScanRelation(SeqScanState *node, EState *estate, int eflags);
+static void InitScanRelationBuffer(SeqScanState *node, EState *estate, int eflags);
 static TupleTableSlot *SeqNext(SeqScanState *node);
 
 /* ----------------------------------------------------------------
@@ -41,7 +42,58 @@ static TupleTableSlot *SeqNext(SeqScanState *node);
  *		This is a workhorse for ExecSeqScan
  * ----------------------------------------------------------------
  */
-static TupleTableSlot *
+
+TupleTableSlot **
+SeqNextListQualTuple(SeqScanState *node)
+{
+	HeapTuple	tuple;
+	HeapScanDesc scandesc;
+	EState	   *estate;
+	ScanDirection direction;
+	//TupleTableSlot *slot;
+	TupleTableSlot **slotlist;
+
+	/*extern*/ int mybuffer_size = 1;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+
+	/*
+	 * get information from the estate and scan state
+	 */
+	scandesc = node->ss_currentScanDesc;
+	estate = node->ps.state;
+	direction = estate->es_direction;
+	//slot = node->ss_ScanTupleSlot;
+	slotlist = node->ss_ScanTupleSlotList;
+
+	for(i=mybuffersize;i--;){
+	/*
+	 * get the next tuple from the table
+	 */
+	tuple = heap_getnext(scandesc, direction);
+
+	/*
+	 * save the tuple and the buffer returned to us by the access methods in
+	 * our scan tuple slot and return the slot.  Note: we pass 'false' because
+	 * tuples returned by heap_getnext() are pointers onto disk pages and were
+	 * not created with palloc() and so should not be pfree()'d.  Note also
+	 * that ExecStoreTuple will increment the refcount of the buffer; the
+	 * refcount will not be dropped until the tuple table slot is cleared.
+	 */
+	if (tuple)
+		ExecStoreTuple(tuple,	/* tuple to store */
+					   slotlist[i],	/* slot to store in */
+					   scandesc->rs_cbuf,		/* buffer associated with this
+												 * tuple */
+					   false);	/* don't pfree this pointer */
+	else
+		ExecClearTuple(slotlist[i]);
+
+	}
+	return slotlist;
+}
+
+static TupleTableSlot * //Taras: original - shall not change
 SeqNext(SeqScanState *node)
 {
 	HeapTuple	tuple;
@@ -106,9 +158,17 @@ SeqRecheck(SeqScanState *node, TupleTableSlot *slot)
  * ----------------------------------------------------------------
  */
 TupleTableSlot *
-ExecSeqScan(SeqScanState *node)
+ExecSeqScan(SeqScanState *node)//Taras: original - shall not change
 {
 	return ExecScan((ScanState *) node,
+					(ExecScanAccessMtd) SeqNext,
+					(ExecScanRecheckMtd) SeqRecheck);
+}
+
+TupleTableSlot **
+ExecSeqScanListQualTuple(SeqScanState *node)
+{
+	return ExecScanListQualTuple((ScanState *) node,
 					(ExecScanAccessMtd) SeqNext,
 					(ExecScanRecheckMtd) SeqRecheck);
 }
@@ -120,7 +180,7 @@ ExecSeqScan(SeqScanState *node)
  * ----------------------------------------------------------------
  */
 static void
-InitScanRelation(SeqScanState *node, EState *estate, int eflags)
+InitScanRelation(SeqScanState *node, EState *estate, int eflags)//Taras: original - shall not change
 {
 	Relation	currentRelation;
 	HeapScanDesc currentScanDesc;
@@ -146,6 +206,34 @@ InitScanRelation(SeqScanState *node, EState *estate, int eflags)
 	ExecAssignScanType(node, RelationGetDescr(currentRelation));
 }
 
+static void
+InitScanRelationBuffer(SeqScanState *node, EState *estate, int eflags)//Taras: original - shall not change
+{
+	Relation	currentRelation;
+	HeapScanDesc currentScanDesc;
+
+	/*
+	 * get the relation object id from the relid'th entry in the range table,
+	 * open that relation and acquire appropriate lock on it.
+	 */
+	currentRelation = ExecOpenScanRelation(estate,
+									  ((SeqScan *) node->ps.plan)->scanrelid,
+										   eflags);
+
+	/* initialize a heapscan */
+	currentScanDesc = heap_beginscan(currentRelation,
+									 estate->es_snapshot,
+									 0,
+									 NULL);
+
+	node->ss_currentRelation = currentRelation;
+	node->ss_currentScanDesc = currentScanDesc;
+
+	/* and report the scan tuple slot's rowtype */
+	ExecAssignScanType(node, RelationGetDescr(currentRelation));
+	ExecAssignScanTypeBuffer(node, RelationGetDescr(currentRelation));//Taras: added
+}
+
 
 /* ----------------------------------------------------------------
  *		ExecInitSeqScan
@@ -155,7 +243,8 @@ SeqScanState *
 ExecInitSeqScan(SeqScan *node, EState *estate, int eflags)
 {
 	SeqScanState *scanstate;
-
+	/*extern*/ int mybuffer_size = 1;
+	unsigned int mybuffersize = mybuffer_size;
 	/*
 	 * Once upon a time it was possible to have an outerPlan of a SeqScan, but
 	 * not any more.
@@ -193,10 +282,17 @@ ExecInitSeqScan(SeqScan *node, EState *estate, int eflags)
 	ExecInitResultTupleSlot(estate, &scanstate->ps);
 	ExecInitScanTupleSlot(estate, scanstate);
 
+	scanstate->ss_ScanTupleSlotList = MemoryContextAllocZero(CurrentMemoryContext, sizeof(TupleTableSlot*) * mybuffersize);//Taras: added
+	scanstate->ps.ps_ResultTupleSlotList = MemoryContextAllocZero(CurrentMemoryContext, sizeof(TupleTableSlot*) * mybuffersize);//Taras: added
+
+	ExecInitResultTupleSlotBuffer(estate, &scanstate->ps);//Taras: added
+	ExecInitScanTupleSlotBuffer(estate, scanstate);//Taras: added
+
 	/*
 	 * initialize scan relation
 	 */
-	InitScanRelation(scanstate, estate, eflags);
+	//InitScanRelation(scanstate, estate, eflags);//Taras:rausgenommer, da gegenseitiger Ausschluss mit -//-Buffer
+	InitScanRelationBuffer(scanstate,estate,eflags);//Taras: added
 
 	scanstate->ps.ps_TupFromTlist = false;
 
@@ -204,7 +300,11 @@ ExecInitSeqScan(SeqScan *node, EState *estate, int eflags)
 	 * Initialize result tuple type and projection info.
 	 */
 	ExecAssignResultTypeFromTL(&scanstate->ps);
-	ExecAssignScanProjectionInfo(scanstate);
+	//ExecAssignScanProjectionInfo(scanstate);//Taras: rausgenommen, da gegenseitiger Ausschluss mit -//-Buffer
+
+	ExecAssignResultTypeFromTLBuffer(&scanstate->ps);//Taras: added
+	ExecAssignScanProjectionInfoBuffer(scanstate);//Taras: added
+
 
 	return scanstate;
 }

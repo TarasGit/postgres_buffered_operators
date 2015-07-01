@@ -18,6 +18,11 @@
 
 extern SeqScanState *ExecInitSeqScan(SeqScan *node, EState *estate, int eflags);
 extern TupleTableSlot *ExecSeqScan(SeqScanState *node);
+extern TupleTableSlot **ExecSeqScanListQualTuple(SeqScanState *node);//Taras: added
+
+
+extern TupleTableSlot **SeqNextListQualTuple(SeqScanState *node);//Taras: added
+
 extern void ExecEndSeqScan(SeqScanState *node);
 extern void ExecReScanSeqScan(SeqScanState *node);
 

@@ -235,6 +235,7 @@ typedef struct ProjectionInfo
 	List	   *pi_targetlist;
 	ExprContext *pi_exprContext;
 	TupleTableSlot *pi_slot;
+	TupleTableSlot **pi_slotlist;
 	ExprDoneCond *pi_itemIsDone;
 	bool		pi_directMap;
 	int			pi_numSimpleVars;
@@ -1017,6 +1018,7 @@ typedef struct PlanState
 	 * Other run-time state needed by most if not all node types.
 	 */
 	TupleTableSlot *ps_ResultTupleSlot; /* slot for my result tuples */
+	TupleTableSlot **ps_ResultTupleSlotList; //Taras: added
 	ExprContext *ps_ExprContext;	/* node's expression-evaluation context */
 	ProjectionInfo *ps_ProjInfo;	/* info for doing tuple projection */
 	bool		ps_TupFromTlist;/* state flag for processing set-valued
@@ -1203,6 +1205,7 @@ typedef struct ScanState
 	Relation	ss_currentRelation;
 	HeapScanDesc ss_currentScanDesc;
 	TupleTableSlot *ss_ScanTupleSlot;
+	TupleTableSlot **ss_ScanTupleSlotList; //Taras:added
 } ScanState;
 
 /*

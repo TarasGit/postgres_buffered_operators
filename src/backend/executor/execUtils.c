@@ -429,19 +429,32 @@ ExecAssignExprContext(EState *estate, PlanState *planstate)
  * ----------------
  */
 void
-ExecAssignResultType(PlanState *planstate, TupleDesc tupDesc)
+ExecAssignResultType(PlanState *planstate, TupleDesc tupDesc)//Taras: original - shall not change
 {
 	TupleTableSlot *slot = planstate->ps_ResultTupleSlot;
 
 	ExecSetSlotDescriptor(slot, tupDesc);
 }
 
+void
+ExecAssignResultTypeBuffer(PlanState *planstate, TupleDesc tupDesc)
+{
+	TupleTableSlot **slotlist = planstate->ps_ResultTupleSlotList;
+	/*extern*/ int mybuffer_size = 1;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+
+	for(i=mybuffersize;i--;)
+		ExecSetSlotDescriptor(slotlist[i], tupDesc);
+}
+
+
 /* ----------------
  *		ExecAssignResultTypeFromTL
  * ----------------
  */
 void
-ExecAssignResultTypeFromTL(PlanState *planstate)
+ExecAssignResultTypeFromTL(PlanState *planstate)//Taras: original - shall not change
 {
 	bool		hasoid;
 	TupleDesc	tupDesc;
@@ -463,6 +476,31 @@ ExecAssignResultTypeFromTL(PlanState *planstate)
 	 */
 	tupDesc = ExecTypeFromTL(planstate->plan->targetlist, hasoid);
 	ExecAssignResultType(planstate, tupDesc);
+}
+
+void
+ExecAssignResultTypeFromTLBuffer(PlanState *planstate)//Taras: original - shall not change
+{
+	bool		hasoid;
+	TupleDesc	tupDesc;
+
+	if (ExecContextForcesOids(planstate, &hasoid))
+	{
+		/* context forces OID choice; hasoid is now set correctly */
+	}
+	else
+	{
+		/* given free choice, don't leave space for OIDs in result tuples */
+		hasoid = false;
+	}
+
+	/*
+	 * ExecTypeFromTL needs the parse-time representation of the tlist, not a
+	 * list of ExprStates.  This is good because some plan nodes don't bother
+	 * to set up planstate->targetlist ...
+	 */
+	tupDesc = ExecTypeFromTL(planstate->plan->targetlist, hasoid);
+	ExecAssignResultTypeBuffer(planstate, tupDesc);
 }
 
 /* ----------------
@@ -492,8 +530,129 @@ ExecGetResultType(PlanState *planstate)
  * there is no need to recheck.
  * ----------------
  */
+
 ProjectionInfo *
-ExecBuildProjectionInfo(List *targetList,
+ExecBuildProjectionInfoBuffer(List *targetList,//Taras: added and changed
+						ExprContext *econtext,
+						TupleTableSlot *slot,
+						TupleTableSlot **slotlist,//Taras: x
+						TupleDesc inputDesc)
+{
+	ProjectionInfo *projInfo = makeNode(ProjectionInfo);
+	int			len = ExecTargetListLength(targetList);
+	int		   *workspace;
+	int		   *varSlotOffsets;
+	int		   *varNumbers;
+	int		   *varOutputCols;
+	List	   *exprlist;
+	int			numSimpleVars;
+	bool		directMap;
+	ListCell   *tl;
+
+	projInfo->pi_exprContext = econtext;
+	projInfo->pi_slot = slot;
+	projInfo->pi_slotlist = slotlist;
+	/* since these are all int arrays, we need do just one palloc */
+	workspace = (int *) palloc(len * 3 * sizeof(int));
+	projInfo->pi_varSlotOffsets = varSlotOffsets = workspace;
+	projInfo->pi_varNumbers = varNumbers = workspace + len;
+	projInfo->pi_varOutputCols = varOutputCols = workspace + len * 2;
+	projInfo->pi_lastInnerVar = 0;
+	projInfo->pi_lastOuterVar = 0;
+	projInfo->pi_lastScanVar = 0;
+
+	/*
+	 * We separate the target list elements into simple Var references and
+	 * expressions which require the full ExecTargetList machinery.  To be a
+	 * simple Var, a Var has to be a user attribute and not mismatch the
+	 * inputDesc.  (Note: if there is a type mismatch then ExecEvalScalarVar
+	 * will probably throw an error at runtime, but we leave that to it.)
+	 */
+	exprlist = NIL;
+	numSimpleVars = 0;
+	directMap = true;
+	foreach(tl, targetList)
+	{
+		GenericExprState *gstate = (GenericExprState *) lfirst(tl);
+		Var		   *variable = (Var *) gstate->arg->expr;
+		bool		isSimpleVar = false;
+
+		if (variable != NULL &&
+			IsA(variable, Var) &&
+			variable->varattno > 0)
+		{
+			if (!inputDesc)
+				isSimpleVar = true;		/* can't check type, assume OK */
+			else if (variable->varattno <= inputDesc->natts)
+			{
+				Form_pg_attribute attr;
+
+				attr = inputDesc->attrs[variable->varattno - 1];
+				if (!attr->attisdropped && variable->vartype == attr->atttypid)
+					isSimpleVar = true;
+			}
+		}
+
+		if (isSimpleVar)
+		{
+			TargetEntry *tle = (TargetEntry *) gstate->xprstate.expr;
+			AttrNumber	attnum = variable->varattno;
+
+			varNumbers[numSimpleVars] = attnum;
+			varOutputCols[numSimpleVars] = tle->resno;
+			if (tle->resno != numSimpleVars + 1)
+				directMap = false;
+
+			switch (variable->varno)
+			{
+				case INNER_VAR:
+					varSlotOffsets[numSimpleVars] = offsetof(ExprContext,
+															 ecxt_innertuple);
+					if (projInfo->pi_lastInnerVar < attnum)
+						projInfo->pi_lastInnerVar = attnum;
+					break;
+
+				case OUTER_VAR:
+					varSlotOffsets[numSimpleVars] = offsetof(ExprContext,
+															 ecxt_outertuple);
+					if (projInfo->pi_lastOuterVar < attnum)
+						projInfo->pi_lastOuterVar = attnum;
+					break;
+
+					/* INDEX_VAR is handled by default case */
+
+				default:
+					varSlotOffsets[numSimpleVars] = offsetof(ExprContext,
+															 ecxt_scantuple);
+					if (projInfo->pi_lastScanVar < attnum)
+						projInfo->pi_lastScanVar = attnum;
+					break;
+			}
+			numSimpleVars++;
+		}
+		else
+		{
+			/* Not a simple variable, add it to generic targetlist */
+			exprlist = lappend(exprlist, gstate);
+			/* Examine expr to include contained Vars in lastXXXVar counts */
+			get_last_attnums((Node *) variable, projInfo);
+		}
+	}
+	projInfo->pi_targetlist = exprlist;
+	projInfo->pi_numSimpleVars = numSimpleVars;
+	projInfo->pi_directMap = directMap;
+
+	if (exprlist == NIL)
+		projInfo->pi_itemIsDone = NULL; /* not needed */
+	else
+		projInfo->pi_itemIsDone = (ExprDoneCond *)
+			palloc(len * sizeof(ExprDoneCond));
+
+	return projInfo;
+}
+
+ProjectionInfo *
+ExecBuildProjectionInfo(List *targetList, //Taras: original - shall not change
 						ExprContext *econtext,
 						TupleTableSlot *slot,
 						TupleDesc inputDesc)
@@ -671,7 +830,7 @@ get_last_attnums(Node *node, ProjectionInfo *projInfo)
  * ----------------
  */
 void
-ExecAssignProjectionInfo(PlanState *planstate,
+ExecAssignProjectionInfo(PlanState *planstate,//Taras: original - shall not change
 						 TupleDesc inputDesc)
 {
 	planstate->ps_ProjInfo =
@@ -681,6 +840,18 @@ ExecAssignProjectionInfo(PlanState *planstate,
 								inputDesc);
 }
 
+
+void
+ExecAssignProjectionInfoBuffer(PlanState *planstate,//Taras: added
+						 TupleDesc inputDesc)
+{
+	planstate->ps_ProjInfo =
+		ExecBuildProjectionInfoBuffer(planstate->targetlist,
+								planstate->ps_ExprContext,
+								planstate->ps_ResultTupleSlot,
+								planstate->ps_ResultTupleSlotList,
+								inputDesc);
+}
 
 /* ----------------
  *		ExecFreeExprContext
@@ -735,12 +906,24 @@ ExecGetScanType(ScanState *scanstate)
  * ----------------
  */
 void
-ExecAssignScanType(ScanState *scanstate, TupleDesc tupDesc)
+ExecAssignScanType(ScanState *scanstate, TupleDesc tupDesc)//Taras: original - shall not change
 {
 	TupleTableSlot *slot = scanstate->ss_ScanTupleSlot;
 
 	ExecSetSlotDescriptor(slot, tupDesc);
 }
+
+void
+ExecAssignScanTypeBuffer(ScanState *scanstate, TupleDesc tupDesc)
+{
+	/*extern*/ int mybuffer_size = 1;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+	TupleTableSlot **slotlist = scanstate->ss_ScanTupleSlotList;
+	for(i=mybuffersize;i--;)
+		ExecSetSlotDescriptor(slotlist[i], tupDesc);
+}
+
 
 /* ----------------
  *		ExecAssignScanTypeFromOuterPlan

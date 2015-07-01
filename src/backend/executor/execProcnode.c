@@ -357,8 +357,60 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  *		Execute the given node to return a(nother) tuple.
  * ----------------------------------------------------------------
  */
+
+ TupleTableSlot **
+ ExecProcNodeListQualTuple(PlanState *node)
+ {
+ 	TupleTableSlot **resultlist;
+ 	/*extern*/ int mybuffer_size = 1;
+
+ 	CHECK_FOR_INTERRUPTS();
+
+ 	if (node->chgParam != NULL) /* something changed */
+ 		ExecReScan(node);		/* let ReScan handle this */
+
+ 	if (node->instrument)
+ 		InstrStartNode(node->instrument);
+
+ 	switch (nodeTag(node))
+ 	{
+ 		case T_SeqScanState:
+ 			resultlist = ExecSeqScanListQualTuple((SeqScanState *) node);
+ 			break;
+ 		case T_HashJoinState:
+ 			resultlist = ExecHashJoin((HashJoinState *) node);
+ 			break;
+
+ 		case T_SortState:
+ 			resultlist = ExecSort((SortState *) node);
+ 			break;
+
+ 		case T_GroupState:
+ 			resultlist = ExecGroup((GroupState *) node);
+ 			break;
+
+ 		case T_AggState:
+ 			resultlist = ExecAgg((AggState *) node);
+ 			break;
+
+ 		case T_HashState:
+ 			resultlist = ExecHash((HashState *) node);
+ 			break;
+
+  		default:
+ 			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(node));
+ 			resultlist = NULL;
+ 			break;
+ 	}
+
+ 	if (node->instrument)
+ 		InstrStopNode(node->instrument, TupIsNull(resultlist[0]) ? 0.0 : mybuffer_size);
+
+ 	return resultlist;
+ }
+
 TupleTableSlot *
-ExecProcNode(PlanState *node)
+ExecProcNode(PlanState *node) //Taras: original - shall not change
 {
 	TupleTableSlot *result;
 

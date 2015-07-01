@@ -33,7 +33,16 @@ static bool tlist_matches_tupdesc(PlanState *ps, List *tlist, Index varno, Tuple
  * inside an EvalPlanQual recheck.  If we aren't, just execute
  * the access method's next-tuple routine.
  */
-static inline TupleTableSlot *
+
+static inline TupleTableSlot **
+ExecScanFetchListQualTuple(ScanState *node,
+			  ExecScanAccessMtd accessMtd,
+			  ExecScanRecheckMtd recheckMtd)
+{
+	return SeqNextListQualTuple(node);
+}
+
+static inline TupleTableSlot * //Taras: original - shall not change!
 ExecScanFetch(ScanState *node,
 			  ExecScanAccessMtd accessMtd,
 			  ExecScanRecheckMtd recheckMtd)
@@ -104,8 +113,123 @@ ExecScanFetch(ScanState *node,
  *			 "cursor" is positioned before the first qualifying tuple.
  * ----------------------------------------------------------------
  */
+
+
+TupleTableSlot **
+ExecScanListQualTuple(ScanState *node,
+		 ExecScanAccessMtd accessMtd,	/* function returning a tuple */
+		 ExecScanRecheckMtd recheckMtd)
+{
+	ExprContext *econtext;
+	List	   *qual;
+	ProjectionInfo *projInfo;
+	ExprDoneCond isDone;
+	TupleTableSlot *resultSlot;
+	TupleTableSlot **resultSlotList;
+	TupleTableSlot **slotlist;
+
+	/*
+	 * Fetch data from node
+	 */
+	qual = node->ps.qual;
+	projInfo = node->ps.ps_ProjInfo;
+	econtext = node->ps.ps_ExprContext;
+
+	/*
+	 * If we have neither a qual to check nor a projection to do, just skip
+	 * all the overhead and return the raw scan tuple.
+	 */
+	if (!qual && !projInfo)
+	{
+		ResetExprContext(econtext);
+		return ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+	}
+
+
+	/*
+	 * Reset per-tuple memory context to free any expression evaluation
+	 * storage allocated in the previous tuple cycle.  Note this can't happen
+	 * until we're done projecting out tuples from a scan tuple.
+	 */
+	ResetExprContext(econtext);
+
+	/*
+	 * get a tuple from the access method.  Loop until we obtain a tuple that
+	 * passes the qualification.
+	 */
+	for (;;)
+	{
+		TupleTableSlot *slot;
+
+		CHECK_FOR_INTERRUPTS();
+
+		slotlist = ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+
+		/*
+		 * if the slot returned by the accessMtd contains NULL, then it means
+		 * there is nothing more to scan so we just return an empty slot,
+		 * being careful to use the projection result slot so it has correct
+		 * tupleDesc.
+		 */
+		if (TupIsNull(slot))
+		{
+			if (projInfo)
+				return ExecClearTuple(projInfo->pi_slot);
+			else
+				return slot;
+		}
+
+		/*
+		 * place the current tuple into the expr context
+		 */
+		econtext->ecxt_scantuple = slot;
+
+		/*
+		 * check that the current tuple satisfies the qual-clause
+		 *
+		 * check for non-nil qual here to avoid a function call to ExecQual()
+		 * when the qual is nil ... saves only a few cycles, but they add up
+		 * ...
+		 */
+		if (!qual || ExecQual(qual, econtext, false))
+		{
+			/*
+			 * Found a satisfactory scan tuple.
+			 */
+			if (projInfo)
+			{
+				/*
+				 * Form a projection tuple, store it in the result tuple slot
+				 * and return it --- unless we find we can project no tuples
+				 * from this scan tuple, in which case continue scan.
+				 */
+				resultSlot = ExecProject(projInfo, &isDone);
+				if (isDone != ExprEndResult)
+				{
+					node->ps.ps_TupFromTlist = (isDone == ExprMultipleResult);
+					return resultSlot;
+				}
+			}
+			else
+			{
+				/*
+				 * Here, we aren't projecting, so just return scan tuple.
+				 */
+				return slot;
+			}
+		}
+		else
+			InstrCountFiltered1(node, 1);
+
+		/*
+		 * Tuple fails qual, so free per-tuple memory and try again.
+		 */
+		ResetExprContext(econtext);
+	}
+}
+
 TupleTableSlot *
-ExecScan(ScanState *node,
+ExecScan(ScanState *node,				//Taras: original - shall not change
 		 ExecScanAccessMtd accessMtd,	/* function returning a tuple */
 		 ExecScanRecheckMtd recheckMtd)
 {
@@ -243,7 +367,7 @@ ExecScan(ScanState *node,
  * ExecAssignScanType must have been called already.
  */
 void
-ExecAssignScanProjectionInfo(ScanState *node)
+ExecAssignScanProjectionInfo(ScanState *node)//Taras: original - shall not change
 {
 	Scan	   *scan = (Scan *) node->ps.plan;
 	Index		varno;
@@ -263,6 +387,29 @@ ExecAssignScanProjectionInfo(ScanState *node)
 		ExecAssignProjectionInfo(&node->ps,
 								 node->ss_ScanTupleSlot->tts_tupleDescriptor);
 }
+
+void
+ExecAssignScanProjectionInfoBuffer(ScanState *node)//Taras: original - shall not change
+{
+	Scan	   *scan = (Scan *) node->ps.plan;
+	Index		varno;
+
+	/* Vars in an index-only scan's tlist should be INDEX_VAR */
+	if (IsA(scan, IndexOnlyScan))
+		varno = INDEX_VAR;
+	else
+		varno = scan->scanrelid;
+
+	if (tlist_matches_tupdesc(&node->ps,
+							  scan->plan.targetlist,
+							  varno,
+							  node->ss_ScanTupleSlot->tts_tupleDescriptor))
+		node->ps.ps_ProjInfo = NULL;
+	else
+		ExecAssignProjectionInfoBuffer(&node->ps,
+								 node->ss_ScanTupleSlot->tts_tupleDescriptor);
+}
+
 
 static bool
 tlist_matches_tupdesc(PlanState *ps, List *tlist, Index varno, TupleDesc tupdesc)

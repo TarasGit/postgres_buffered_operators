@@ -223,6 +223,8 @@ extern void EvalPlanQualEnd(EPQState *epqstate);
  */
 extern PlanState *ExecInitNode(Plan *node, EState *estate, int eflags);
 extern TupleTableSlot *ExecProcNode(PlanState *node);
+extern TupleTableSlot **ExecProcNodeListQualTuple(PlanState *node);//Taras: added
+
 extern Node *MultiExecProcNode(PlanState *node);
 extern void ExecEndNode(PlanState *node);
 
@@ -256,14 +258,26 @@ typedef bool (*ExecScanRecheckMtd) (ScanState *node, TupleTableSlot *slot);
 
 extern TupleTableSlot *ExecScan(ScanState *node, ExecScanAccessMtd accessMtd,
 		 ExecScanRecheckMtd recheckMtd);
+extern TupleTableSlot **ExecScanListQualTuple(ScanState *node, ExecScanAccessMtd accessMtd,
+		 ExecScanRecheckMtd recheckMtd);
+
 extern void ExecAssignScanProjectionInfo(ScanState *node);
+extern void ExecAssignScanProjectionInfoBuffer(ScanState *node);//Taras: added
+
 extern void ExecScanReScan(ScanState *node);
 
 /*
  * prototypes from functions in execTuples.c
  */
 extern void ExecInitResultTupleSlot(EState *estate, PlanState *planstate);
+
+extern void ExecInitResultTupleSlotBuffer(EState *estate, PlanState *planstate);//Taras: added
+
 extern void ExecInitScanTupleSlot(EState *estate, ScanState *scanstate);
+
+
+extern void ExecInitScanTupleSlotBuffer(EState *estate, ScanState *scanstate);//Taras: added
+
 extern TupleTableSlot *ExecInitExtraTupleSlot(EState *estate);
 extern TupleTableSlot *ExecInitNullTupleSlot(EState *estate,
 					  TupleDesc tupType);
@@ -334,17 +348,34 @@ extern ExprContext *MakePerTupleExprContext(EState *estate);
 
 extern void ExecAssignExprContext(EState *estate, PlanState *planstate);
 extern void ExecAssignResultType(PlanState *planstate, TupleDesc tupDesc);
+
+extern void ExecAssignResultTypeBuffer(PlanState *planstate, TupleDesc tupDesc);
+
 extern void ExecAssignResultTypeFromTL(PlanState *planstate);
+extern void ExecAssignResultTypeFromTLBuffer(PlanState *planstate);//Taras: added
 extern TupleDesc ExecGetResultType(PlanState *planstate);
 extern ProjectionInfo *ExecBuildProjectionInfo(List *targetList,
 						ExprContext *econtext,
 						TupleTableSlot *slot,
 						TupleDesc inputDesc);
+
+extern ProjectionInfo *ExecBuildProjectionInfoBuffer(List *targetList,//Taras: added and changed
+						ExprContext *econtext,
+						TupleTableSlot *slot,
+						TupleTableSlot **slotlist,
+						TupleDesc inputDesc);
+
 extern void ExecAssignProjectionInfo(PlanState *planstate,
+						 TupleDesc inputDesc);
+
+extern void ExecAssignProjectionInfoBuffer(PlanState *planstate,//Taras: added
 						 TupleDesc inputDesc);
 extern void ExecFreeExprContext(PlanState *planstate);
 extern TupleDesc ExecGetScanType(ScanState *scanstate);
 extern void ExecAssignScanType(ScanState *scanstate, TupleDesc tupDesc);
+
+extern void ExecAssignScanTypeBuffer(ScanState *scanstate, TupleDesc tupDesc);
+
 extern void ExecAssignScanTypeFromOuterPlan(ScanState *scanstate);
 
 extern bool ExecRelationIsTargetRelation(EState *estate, Index scanrelid);

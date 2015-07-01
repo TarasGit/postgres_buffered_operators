@@ -832,9 +832,19 @@ ExecCopySlot(TupleTableSlot *dstslot, TupleTableSlot *srcslot)
  * ----------------
  */
 void
-ExecInitResultTupleSlot(EState *estate, PlanState *planstate)
+ExecInitResultTupleSlot(EState *estate, PlanState *planstate)//Taras: original - shall not change
 {
 	planstate->ps_ResultTupleSlot = ExecAllocTableSlot(&estate->es_tupleTable);
+}
+
+void
+ExecInitResultTupleSlotBuffer(EState *estate, PlanState *planstate)
+{
+	/*extern*/ int mybuffer_size = 1;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+	for(i=mybuffersize;i--;)
+		planstate->ps_ResultTupleSlotList[i] = ExecAllocTableSlot(&estate->es_tupleTable);
 }
 
 /* ----------------
@@ -842,9 +852,19 @@ ExecInitResultTupleSlot(EState *estate, PlanState *planstate)
  * ----------------
  */
 void
-ExecInitScanTupleSlot(EState *estate, ScanState *scanstate)
+ExecInitScanTupleSlot(EState *estate, ScanState *scanstate) //Taras: original - shall not change
 {
 	scanstate->ss_ScanTupleSlot = ExecAllocTableSlot(&estate->es_tupleTable);
+}
+
+void
+ExecInitScanTupleSlotBuffer(EState *estate, ScanState *scanstate) //Taras: added
+{
+	/*extern*/ int mybuffer_size = 1;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+	for(i=mybuffersize;i--;)
+		scanstate->ss_ScanTupleSlotList[i] = ExecAllocTableSlot(&estate->es_tupleTable);
 }
 
 /* ----------------

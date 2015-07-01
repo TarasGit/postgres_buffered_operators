@@ -81,6 +81,13 @@ static void ExecutePlan(EState *estate, PlanState *planstate,
 			long numberTuples,
 			ScanDirection direction,
 			DestReceiver *dest);
+static void ExecutePlanListQualTuple(EState *estate, PlanState *planstate,//Taras: added for buffer with tts->qual
+			CmdType operation,
+			bool sendTuples,
+			long numberTuples,
+			ScanDirection direction,
+			DestReceiver *dest);
+
 static bool ExecCheckRTEPerms(RangeTblEntry *rte);
 static void ExecCheckXactReadOnly(PlannedStmt *plannedstmt);
 static char *ExecBuildSlotValueDescription(Oid reloid,
@@ -316,15 +323,36 @@ standard_ExecutorRun(QueryDesc *queryDesc,
 	/*
 	 * run plan
 	 */
-	if (!ScanDirectionIsNoMovement(direction))
-		ExecutePlan(estate,
+	/*extern*/ int buffer_version=0; //Taras: case 0: buffer with tts->qual, case 1: buffer without tts->qual, fill only qual tuples, case 3: original
+	switch(buffer_version){
+	case 0:
+		if (!ScanDirectionIsNoMovement(direction))
+			ExecutePlanListQualTuple(estate,
 					queryDesc->planstate,
 					operation,
 					sendTuples,
 					count,
 					direction,
 					dest);
+				break;
+	case 1:
+		break;
 
+	case 2:
+		if (!ScanDirectionIsNoMovement(direction))
+					ExecutePlan(estate,
+							queryDesc->planstate,
+							operation,
+							sendTuples,
+							count,
+							direction,
+							dest);
+			break;
+	default:
+		fprintf(stderr,"ExecutorRun - no buffer version choosen\n");
+		break;
+
+	}
 	/*
 	 * shutdown tuple receiver, if we started it
 	 */
@@ -1456,8 +1484,106 @@ ExecEndPlan(PlanState *planstate, EState *estate)
  * user can see it
  * ----------------------------------------------------------------
  */
+
 static void
-ExecutePlan(EState *estate,
+ExecutePlanListQualTuple(EState *estate,
+			PlanState *planstate,
+			CmdType operation,
+			bool sendTuples,
+			long numberTuples,
+			ScanDirection direction,
+			DestReceiver *dest)
+{
+	TupleTableSlot *slot;
+	TupleTableSlot **slotlist;
+	/*extern*/ int mybuffer_size=1;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+	unsigned int breakval = 0;
+
+	long		current_tuple_count;
+
+	/*
+	 * initialize local variables
+	 */
+	current_tuple_count = 0;
+
+	/*
+	 * Set the direction.
+	 */
+	estate->es_direction = direction;
+
+	/*
+	 * Loop until we've processed the proper number of tuples from the plan.
+	 */
+	for (;;)
+	{
+		if(breakval){
+			break;
+		}
+		/* Reset the per-output-tuple exprcontext */
+		ResetPerTupleExprContext(estate);
+
+		/*
+		 * Execute the plan and obtain a tuple
+		 */
+		slotlist = ExecProcNodeListQualTuple(planstate);
+
+		if(slotlist == NULL){//Taras: end of tuple stream: 1) tts.is_null = true 2) slotlist == NULL
+			break;
+		}
+
+		for(i=mybuffersize;i--;){
+			slot = slotlist[i];
+		/*
+		 * if the tuple is null, then we assume there is nothing more to
+		 * process so we just end the loop...
+		 */
+		if (TupIsNull(slot)){
+			breakval = 1;
+			break;
+		}
+		/*
+		 * If we have a junk filter, then project a new tuple with the junk
+		 * removed.
+		 *
+		 * Store this new "clean" tuple in the junkfilter's resultSlot.
+		 * (Formerly, we stored it back over the "dirty" tuple, which is WRONG
+		 * because that tuple slot has the wrong descriptor.)
+		 */
+		if (estate->es_junkFilter != NULL)
+			slot = ExecFilterJunk(estate->es_junkFilter, slot);
+
+		/*
+		 * If we are supposed to send the tuple somewhere, do so. (In
+		 * practice, this is probably always the case at this point.)
+		 */
+		if (sendTuples)
+			(*dest->receiveSlot) (slot, dest);
+
+		/*
+		 * Count tuples processed, if this is a SELECT.  (For other operation
+		 * types, the ModifyTable plan node must count the appropriate
+		 * events.)
+		 */
+		if (operation == CMD_SELECT)
+			(estate->es_processed)++;
+
+		/*
+		 * check our tuple count.. if we've processed the proper number then
+		 * quit, else loop again and process more tuples.  Zero numberTuples
+		 * means no limit.
+		 */
+		current_tuple_count++;
+		if (numberTuples && numberTuples == current_tuple_count)
+			break;
+	}
+	}
+}
+
+
+static void
+ExecutePlan(EState *estate,	//Taras: original - shall not change!
 			PlanState *planstate,
 			CmdType operation,
 			bool sendTuples,
