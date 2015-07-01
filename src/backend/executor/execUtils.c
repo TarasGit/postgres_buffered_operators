@@ -440,7 +440,7 @@ void
 ExecAssignResultTypeBuffer(PlanState *planstate, TupleDesc tupDesc)
 {
 	TupleTableSlot **slotlist = planstate->ps_ResultTupleSlotList;
-	/*extern*/ int mybuffer_size = 1;
+	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 	unsigned int i;
 
@@ -916,7 +916,7 @@ ExecAssignScanType(ScanState *scanstate, TupleDesc tupDesc)//Taras: original - s
 void
 ExecAssignScanTypeBuffer(ScanState *scanstate, TupleDesc tupDesc)
 {
-	/*extern*/ int mybuffer_size = 1;
+	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 	unsigned int i;
 	TupleTableSlot **slotlist = scanstate->ss_ScanTupleSlotList;

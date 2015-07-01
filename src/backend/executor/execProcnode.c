@@ -362,7 +362,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  ExecProcNodeListQualTuple(PlanState *node)
  {
  	TupleTableSlot **resultlist;
- 	/*extern*/ int mybuffer_size = 1;
+ 	extern int mybuffer_size;
 
  	CHECK_FOR_INTERRUPTS();
 

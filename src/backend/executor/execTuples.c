@@ -840,7 +840,7 @@ ExecInitResultTupleSlot(EState *estate, PlanState *planstate)//Taras: original -
 void
 ExecInitResultTupleSlotBuffer(EState *estate, PlanState *planstate)
 {
-	/*extern*/ int mybuffer_size = 1;
+	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 	unsigned int i;
 	for(i=mybuffersize;i--;)
@@ -860,7 +860,7 @@ ExecInitScanTupleSlot(EState *estate, ScanState *scanstate) //Taras: original - 
 void
 ExecInitScanTupleSlotBuffer(EState *estate, ScanState *scanstate) //Taras: added
 {
-	/*extern*/ int mybuffer_size = 1;
+	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 	unsigned int i;
 	for(i=mybuffersize;i--;)

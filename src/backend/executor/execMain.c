@@ -1496,7 +1496,7 @@ ExecutePlanListQualTuple(EState *estate,
 {
 	TupleTableSlot *slot;
 	TupleTableSlot **slotlist;
-	/*extern*/ int mybuffer_size=1;
+	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 	unsigned int i;
 	unsigned int breakval = 0;

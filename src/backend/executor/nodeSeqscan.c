@@ -53,7 +53,7 @@ SeqNextListQualTuple(SeqScanState *node)
 	//TupleTableSlot *slot;
 	TupleTableSlot **slotlist;
 
-	/*extern*/ int mybuffer_size = 1;
+	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 	unsigned int i;
 
@@ -243,7 +243,7 @@ SeqScanState *
 ExecInitSeqScan(SeqScan *node, EState *estate, int eflags)
 {
 	SeqScanState *scanstate;
-	/*extern*/ int mybuffer_size = 1;
+	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 	/*
 	 * Once upon a time it was possible to have an outerPlan of a SeqScan, but
