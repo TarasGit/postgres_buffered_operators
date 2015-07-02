@@ -366,7 +366,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  	switch (nodeTag(node))
  	{
  		case T_SeqScanState:
- 			resultlist = ExecSeqScanListQualTuple((SeqScanState *) node);
+ 			resultlist = ExecScanListQualTuple((SeqScanState *) node);
  			break;
  		case T_HashJoinState:
  			resultlist = ExecHashJoinListQualTuple((HashJoinState *) node);

@@ -264,8 +264,8 @@ typedef bool (*ExecScanRecheckMtd) (ScanState *node, TupleTableSlot *slot);
 
 extern TupleTableSlot *ExecScan(ScanState *node, ExecScanAccessMtd accessMtd,
 		 ExecScanRecheckMtd recheckMtd);
-extern TupleTableSlot **ExecScanListQualTuple(ScanState *node, ExecScanAccessMtd accessMtd,
-		 ExecScanRecheckMtd recheckMtd);
+
+extern TupleTableSlot **ExecScanListQualTuple(ScanState *node);//Taras: added
 
 
 extern TupleTableSlot ** ExecScanFetchListQualTuple(ScanState *node,//TAras: added

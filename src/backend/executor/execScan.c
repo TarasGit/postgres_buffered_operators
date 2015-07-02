@@ -119,9 +119,7 @@ ExecScanFetch(ScanState *node,
 
 
 TupleTableSlot **
-ExecScanListQualTuple(ScanState *node,
-		 ExecScanAccessMtd accessMtd,	/* function returning a tuple */
-		 ExecScanRecheckMtd recheckMtd)
+ExecScanListQualTuple(ScanState *node)
 {
 	ExprContext *econtext;
 	List	   *qual;

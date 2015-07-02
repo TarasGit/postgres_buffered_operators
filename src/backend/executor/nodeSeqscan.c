@@ -43,7 +43,7 @@ static TupleTableSlot *SeqNext(SeqScanState *node);
  * ----------------------------------------------------------------
  */
 
-TupleTableSlot **
+void
 SeqNextListQualTuple(SeqScanState *node)
 {
 	HeapTuple	tuple;
@@ -98,7 +98,6 @@ SeqNextListQualTuple(SeqScanState *node)
 			break;
 		}
 	}
-	return node->ss_ScanTupleSlotList;
 }
 
 static TupleTableSlot * //Taras: original - shall not change
@@ -176,9 +175,7 @@ ExecSeqScan(SeqScanState *node)//Taras: original - shall not change
 TupleTableSlot **
 ExecSeqScanListQualTuple(SeqScanState *node)
 {
-	return ExecScanListQualTuple((ScanState *) node,
-					(ExecScanAccessMtd) SeqNext,
-					(ExecScanRecheckMtd) SeqRecheck);
+	return ExecScanListQualTuple((ScanState *) node);//Taras: is not used
 }
 
 /* ----------------------------------------------------------------
