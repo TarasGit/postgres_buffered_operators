@@ -2,10 +2,27 @@
 /src/backend/access/mybuffer/mybuffer.c
 
 #2.Configure project
-1. normal: ./configure --prefix=$HOME/project --enable-depend --enable-cassert --enable-debug
-2. debug:  ./configure --enable-cassert --enable-debug CFLAGS="-ggdb -Og -fno-omit-frame-pointer"
+./configure --prefix=$HOME/project --enable-depend --enable-cassert --enable-debug
 
 #3.Install to $HOME/project
 make all -j4
 make install
+
+#4. enable backend execution time logging in postgresql.conf
+set log_min_duration_statement = 0 #server side exec time without transfer time
+set client_min_messages = log #get the log info in console
+
+#5. start postmaster process and redirect output into file pglog.log(don't channge the name because of scripts)
+postmaster -D ../Data/ &> pglog.log
+		
+#6. start readsql.sh which reads select.sql, PATH should be set to psql dir
+./readsql.sh 
+
+#7. copy pglog into dir with pgextplot.sh(!) and run it
+#extracts execution time from server log, creates result/nr-directories with data and used gnuplot to plot the result to res.png
+./pgextplot.sh
+
+
+
+
 
