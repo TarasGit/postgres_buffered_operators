@@ -840,6 +840,256 @@ heapgettup(HeapScanDesc scan,
  * heapgettup is 1-based.
  * ----------------
  */
+
+
+
+
+
+
+
+static void
+heapgettup_pagemodeBuffer(HeapScanDesc scan,
+					ScanDirection dir,
+					int nkeys,
+					ScanKey key,
+					int pos)
+{
+	HeapTuple	tuple = &(scan->rs_ctuplist[pos]);
+	bool		backward = ScanDirectionIsBackward(dir);
+	BlockNumber page;
+	bool		finished;
+	Page		dp;
+	int			lines;
+	int			lineindex;
+	OffsetNumber lineoff;
+	int			linesleft;
+	ItemId		lpp;
+
+	/*
+	 * calculate next starting lineindex, given scan direction
+	 */
+	if (ScanDirectionIsForward(dir))
+	{
+		if (!scan->rs_inited)
+		{
+			/*
+			 * return null immediately if relation is empty
+			 */
+			if (scan->rs_nblocks == 0)
+			{
+				Assert(!BufferIsValid(scan->rs_cbuf));
+				tuple->t_data = NULL;
+				return;
+			}
+			page = scan->rs_startblock; /* first page */
+			heapgetpage(scan, page);
+			lineindex = 0;
+			scan->rs_inited = true;
+		}
+		else
+		{
+			/* continue from previously returned page/tuple */
+			page = scan->rs_cblock;		/* current page */
+			lineindex = scan->rs_cindex + 1;
+		}
+
+		dp = (Page) BufferGetPage(scan->rs_cbuf);
+		lines = scan->rs_ntuples;
+		/* page and lineindex now reference the next visible tid */
+
+		linesleft = lines - lineindex;
+	}
+	else if (backward)
+	{
+		if (!scan->rs_inited)
+		{
+			/*
+			 * return null immediately if relation is empty
+			 */
+			if (scan->rs_nblocks == 0)
+			{
+				Assert(!BufferIsValid(scan->rs_cbuf));
+				tuple->t_data = NULL;
+				return;
+			}
+
+			/*
+			 * Disable reporting to syncscan logic in a backwards scan; it's
+			 * not very likely anyone else is doing the same thing at the same
+			 * time, and much more likely that we'll just bollix things for
+			 * forward scanners.
+			 */
+			scan->rs_syncscan = false;
+			/* start from last page of the scan */
+			if (scan->rs_startblock > 0)
+				page = scan->rs_startblock - 1;
+			else
+				page = scan->rs_nblocks - 1;
+			heapgetpage(scan, page);
+		}
+		else
+		{
+			/* continue from previously returned page/tuple */
+			page = scan->rs_cblock;		/* current page */
+		}
+
+		dp = (Page) BufferGetPage(scan->rs_cbuf);
+		lines = scan->rs_ntuples;
+
+		if (!scan->rs_inited)
+		{
+			lineindex = lines - 1;
+			scan->rs_inited = true;
+		}
+		else
+		{
+			lineindex = scan->rs_cindex - 1;
+		}
+		/* page and lineindex now reference the previous visible tid */
+
+		linesleft = lineindex + 1;
+	}
+	else
+	{
+		/*
+		 * ``no movement'' scan direction: refetch prior tuple
+		 */
+		if (!scan->rs_inited)
+		{
+			Assert(!BufferIsValid(scan->rs_cbuf));
+			tuple->t_data = NULL;
+			return;
+		}
+
+		page = ItemPointerGetBlockNumber(&(tuple->t_self));
+		if (page != scan->rs_cblock)
+			heapgetpage(scan, page);
+
+		/* Since the tuple was previously fetched, needn't lock page here */
+		dp = (Page) BufferGetPage(scan->rs_cbuf);
+		lineoff = ItemPointerGetOffsetNumber(&(tuple->t_self));
+		lpp = PageGetItemId(dp, lineoff);
+		Assert(ItemIdIsNormal(lpp));
+
+		tuple->t_data = (HeapTupleHeader) PageGetItem((Page) dp, lpp);
+		tuple->t_len = ItemIdGetLength(lpp);
+
+		/* check that rs_cindex is in sync */
+		Assert(scan->rs_cindex < scan->rs_ntuples);
+		Assert(lineoff == scan->rs_vistuples[scan->rs_cindex]);
+
+		return;
+	}
+
+	/*
+	 * advance the scan until we find a qualifying tuple or run out of stuff
+	 * to scan
+	 */
+	for (;;)
+	{
+		while (linesleft > 0)
+		{
+			lineoff = scan->rs_vistuples[lineindex];
+			lpp = PageGetItemId(dp, lineoff);
+			Assert(ItemIdIsNormal(lpp));
+
+			tuple->t_data = (HeapTupleHeader) PageGetItem((Page) dp, lpp);
+			tuple->t_len = ItemIdGetLength(lpp);
+			ItemPointerSet(&(tuple->t_self), page, lineoff);
+
+			/*
+			 * if current tuple qualifies, return it.
+			 */
+			if (key != NULL)
+			{
+				bool		valid;
+
+				HeapKeyTest(tuple, RelationGetDescr(scan->rs_rd),
+							nkeys, key, valid);
+				if (valid)
+				{
+					scan->rs_cindex = lineindex;
+					return;
+				}
+			}
+			else
+			{
+				scan->rs_cindex = lineindex;
+				return;
+			}
+
+			/*
+			 * otherwise move to the next item on the page
+			 */
+			--linesleft;
+			if (backward)
+				--lineindex;
+			else
+				++lineindex;
+		}
+
+		/*
+		 * if we get here, it means we've exhausted the items on this page and
+		 * it's time to move to the next.
+		 */
+		if (backward)
+		{
+			finished = (page == scan->rs_startblock) ||
+				(scan->rs_numblocks != InvalidBlockNumber ? --scan->rs_numblocks <= 0 : false);
+			if (page == 0)
+				page = scan->rs_nblocks;
+			page--;
+		}
+		else
+		{
+			page++;
+			if (page >= scan->rs_nblocks)
+				page = 0;
+			finished = (page == scan->rs_startblock) ||
+				(scan->rs_numblocks != InvalidBlockNumber ? --scan->rs_numblocks <= 0 : false);
+
+			/*
+			 * Report our new scan position for synchronization purposes. We
+			 * don't do that when moving backwards, however. That would just
+			 * mess up any other forward-moving scanners.
+			 *
+			 * Note: we do this before checking for end of scan so that the
+			 * final state of the position hint is back at the start of the
+			 * rel.  That's not strictly necessary, but otherwise when you run
+			 * the same query multiple times the starting position would shift
+			 * a little bit backwards on every invocation, which is confusing.
+			 * We don't guarantee any specific ordering in general, though.
+			 */
+			if (scan->rs_syncscan)
+				ss_report_location(scan->rs_rd, page);
+		}
+
+		/*
+		 * return NULL if we've exhausted all the pages
+		 */
+		if (finished)
+		{
+			if (BufferIsValid(scan->rs_cbuf))
+				ReleaseBuffer(scan->rs_cbuf);
+			scan->rs_cbuf = InvalidBuffer;
+			scan->rs_cblock = InvalidBlockNumber;
+			tuple->t_data = NULL;
+			scan->rs_inited = false;
+			return;
+		}
+
+		heapgetpage(scan, page);
+
+		dp = (Page) BufferGetPage(scan->rs_cbuf);
+		lines = scan->rs_ntuples;
+		linesleft = lines;
+		if (backward)
+			lineindex = lines - 1;
+		else
+			lineindex = 0;
+	}
+}
+
 static void
 heapgettup_pagemode(HeapScanDesc scan,
 					ScanDirection dir,
@@ -1679,6 +1929,36 @@ heap_endscan(HeapScanDesc scan)
 #define HEAPDEBUG_3
 #endif   /* !defined(HEAPDEBUGALL) */
 
+
+HeapTuple
+heap_getnextBuffer(HeapScanDesc scan, ScanDirection direction, int pos)
+{
+	/* Note: no locking manipulations needed */
+
+	HEAPDEBUG_1;				/* heap_getnext( info ) */
+
+	if (scan->rs_pageatatime)
+		heapgettup_pagemodeBuffer(scan, direction,
+							scan->rs_nkeys, scan->rs_key, pos);
+	//else
+		//heapgettup(scan, direction, scan->rs_nkeys, scan->rs_key);
+
+	if (scan->rs_ctuplist[pos].t_data == NULL)
+	{
+		HEAPDEBUG_2;			/* heap_getnext returning EOS */
+		return NULL;
+	}
+
+	/*
+	 * if we get here it means we have a new current scan tuple, so point to
+	 * the proper return buffer and return the tuple.
+	 */
+	HEAPDEBUG_3;				/* heap_getnext returning tuple */
+
+	pgstat_count_heap_getnext(scan->rs_rd);
+
+	return &(scan->rs_ctuplist[pos]);
+}
 
 HeapTuple
 heap_getnext(HeapScanDesc scan, ScanDirection direction)

@@ -22,6 +22,9 @@ extern HashJoinState *ExecInitHashJoin(HashJoin *node, EState *estate, int eflag
 extern TupleTableSlot *ExecHashJoin(HashJoinState *node);
 extern TupleTableSlot **ExecHashJoinListQualTuple(HashJoinState *node);//Taras: added
 
+extern TupleTableSlot **ExecHashJoinListFull(HashJoinState *node);//Taras: added
+
+
 extern void ExecEndHashJoin(HashJoinState *node);
 extern void ExecReScanHashJoin(HashJoinState *node);
 

@@ -325,6 +325,9 @@ static void build_hash_table(AggState *aggstate);
 static AggHashEntry lookup_hash_entry(AggState *aggstate,
 				  TupleTableSlot *inputslot);
 static TupleTableSlot *agg_retrieve_direct(AggState *aggstate);
+
+static TupleTableSlot **agg_retrieve_direct_listfull(AggState *aggstate);
+
 static void agg_fill_hash_table(AggState *aggstate);
 static TupleTableSlot *agg_retrieve_hash_table(AggState *aggstate);
 static Datum GetAggInitVal(Datum textInitVal, Oid transtype);
@@ -1080,6 +1083,31 @@ lookup_hash_entry(AggState *aggstate, TupleTableSlot *inputslot)
  *	  stored in the expression context to be used when ExecProject evaluates
  *	  the result tuple.
  */
+
+TupleTableSlot **
+ExecAggListFull(AggState *node)
+{
+
+
+	/*
+	 * Exit if nothing left to do.  (We must do the ps_TupFromTlist check
+	 * first, because in some cases agg_done gets set before we emit the final
+	 * aggregate tuple, and we have to finish running SRFs for it.)
+	 */
+	if (node->agg_done)
+		return NULL;
+
+	/* Dispatch based on strategy */
+	if (((Agg *) node->ss.ps.plan)->aggstrategy == AGG_HASHED)
+	{
+		if (!node->table_filled)
+			agg_fill_hash_table(node);
+		return agg_retrieve_hash_table(node);
+	}
+	else
+		return agg_retrieve_direct_listfull(node);
+}
+
 TupleTableSlot *
 ExecAgg(AggState *node)
 {
@@ -1122,6 +1150,212 @@ ExecAgg(AggState *node)
 /*
  * ExecAgg for non-hashed case
  */
+
+
+static TupleTableSlot **
+agg_retrieve_direct_listfull(AggState *aggstate)
+{
+	Agg		   *node = (Agg *) aggstate->ss.ps.plan;
+	PlanState  *outerPlan;
+	ExprContext *econtext;
+	ExprContext *tmpcontext;
+	Datum	   *aggvalues;
+	bool	   *aggnulls;
+	AggStatePerAgg peragg;
+	AggStatePerGroup pergroup;
+	TupleTableSlot *outerslot;
+	TupleTableSlot *firstSlot;
+	int			aggno;
+
+	/*
+	 * get state info from node
+	 */
+	outerPlan = outerPlanState(aggstate);
+	/* econtext is the per-output-tuple expression context */
+	econtext = aggstate->ss.ps.ps_ExprContext;
+	aggvalues = econtext->ecxt_aggvalues;
+	aggnulls = econtext->ecxt_aggnulls;
+	/* tmpcontext is the per-input-tuple expression context */
+	tmpcontext = aggstate->tmpcontext;
+	peragg = aggstate->peragg;
+	pergroup = aggstate->pergroup;
+	firstSlot = aggstate->ss.ss_ScanTupleSlot;
+
+	/*
+	 * We loop retrieving groups until we find one matching
+	 * aggstate->ss.ps.qual
+	 */
+	while (!aggstate->agg_done)
+	{
+		/*
+		 * If we don't already have the first tuple of the new group, fetch it
+		 * from the outer plan.
+		 */
+		if (aggstate->grp_firstTuple == NULL)
+		{
+			outerslot = ExecProcNode(outerPlan);
+			if (!TupIsNull(outerslot))
+			{
+				/*
+				 * Make a copy of the first input tuple; we will use this for
+				 * comparisons (in group mode) and for projection.
+				 */
+				aggstate->grp_firstTuple = ExecCopySlotTuple(outerslot);
+			}
+			else
+			{
+				/* outer plan produced no tuples at all */
+				aggstate->agg_done = true;
+				/* If we are grouping, we should produce no tuples too */
+				if (node->aggstrategy != AGG_PLAIN)
+					return NULL;
+			}
+		}
+
+		/*
+		 * Clear the per-output-tuple context for each group, as well as
+		 * aggcontext (which contains any pass-by-ref transvalues of the old
+		 * group).  We also clear any child contexts of the aggcontext; some
+		 * aggregate functions store working state in such contexts.
+		 *
+		 * We use ReScanExprContext not just ResetExprContext because we want
+		 * any registered shutdown callbacks to be called.  That allows
+		 * aggregate functions to ensure they've cleaned up any non-memory
+		 * resources.
+		 */
+		ReScanExprContext(econtext);
+
+		MemoryContextResetAndDeleteChildren(aggstate->aggcontext);
+
+		/*
+		 * Initialize working state for a new input tuple group
+		 */
+		initialize_aggregates(aggstate, peragg, pergroup);
+
+		if (aggstate->grp_firstTuple != NULL)
+		{
+			/*
+			 * Store the copied first input tuple in the tuple table slot
+			 * reserved for it.  The tuple will be deleted when it is cleared
+			 * from the slot.
+			 */
+			ExecStoreTuple(aggstate->grp_firstTuple,
+						   firstSlot,
+						   InvalidBuffer,
+						   true);
+			aggstate->grp_firstTuple = NULL;	/* don't keep two pointers */
+
+			/* set up for first advance_aggregates call */
+			tmpcontext->ecxt_outertuple = firstSlot;
+
+			/*
+			 * Process each outer-plan tuple, and then fetch the next one,
+			 * until we exhaust the outer plan or cross a group boundary.
+			 */
+			for (;;)
+			{
+				advance_aggregates(aggstate, pergroup);
+
+				/* Reset per-input-tuple context after each tuple */
+				ResetExprContext(tmpcontext);
+
+				outerslot = ExecProcNode(outerPlan);
+				if (TupIsNull(outerslot))
+				{
+					/* no more outer-plan tuples available */
+					aggstate->agg_done = true;
+					break;
+				}
+				/* set up for next advance_aggregates call */
+				tmpcontext->ecxt_outertuple = outerslot;
+
+				/*
+				 * If we are grouping, check whether we've crossed a group
+				 * boundary.
+				 */
+				if (node->aggstrategy == AGG_SORTED)
+				{
+					if (!execTuplesMatch(firstSlot,
+										 outerslot,
+										 node->numCols, node->grpColIdx,
+										 aggstate->eqfunctions,
+										 tmpcontext->ecxt_per_tuple_memory))
+					{
+						/*
+						 * Save the first input tuple of the next group.
+						 */
+						aggstate->grp_firstTuple = ExecCopySlotTuple(outerslot);
+						break;
+					}
+				}
+			}
+		}
+
+		/*
+		 * Use the representative input tuple for any references to
+		 * non-aggregated input columns in aggregate direct args, the node
+		 * qual, and the tlist.  (If we are not grouping, and there are no
+		 * input rows at all, we will come here with an empty firstSlot ...
+		 * but if not grouping, there can't be any references to
+		 * non-aggregated input columns, so no problem.)
+		 */
+		econtext->ecxt_outertuple = firstSlot;
+
+		/*
+		 * Done scanning input tuple group. Finalize each aggregate
+		 * calculation, and stash results in the per-output-tuple context.
+		 */
+		for (aggno = 0; aggno < aggstate->numaggs; aggno++)
+		{
+			AggStatePerAgg peraggstate = &peragg[aggno];
+			AggStatePerGroup pergroupstate = &pergroup[aggno];
+
+			if (peraggstate->numSortCols > 0)
+			{
+				if (peraggstate->numInputs == 1)
+					process_ordered_aggregate_single(aggstate,
+													 peraggstate,
+													 pergroupstate);
+				else
+					process_ordered_aggregate_multi(aggstate,
+													peraggstate,
+													pergroupstate);
+			}
+
+			finalize_aggregate(aggstate, peraggstate, pergroupstate,
+							   &aggvalues[aggno], &aggnulls[aggno]);
+		}
+
+		/*
+		 * Check the qual (HAVING clause); if the group does not match, ignore
+		 * it and loop back to try to process another group.
+		 */
+		if (ExecQual(aggstate->ss.ps.qual, econtext, false))
+		{
+			/*
+			 * Form and return a projection tuple using the aggregate results
+			 * and the representative input tuple.
+			 */
+			TupleTableSlot *result;
+			ExprDoneCond isDone;
+
+			result = ExecProject(aggstate->ss.ps.ps_ProjInfo, &isDone);
+
+			if (isDone != ExprEndResult)
+			{
+				aggstate->ss.ps.ps_TupFromTlist =
+					(isDone == ExprMultipleResult);
+				return result;
+			}
+		}
+		else
+			InstrCountFiltered1(aggstate, 1);
+	}
+
+	/* No more groups */
+	return NULL;
+}
+
 static TupleTableSlot *
 agg_retrieve_direct(AggState *aggstate)
 {

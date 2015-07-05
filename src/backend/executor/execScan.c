@@ -115,9 +115,144 @@ ExecScanFetch(ScanState *node,
  *			 "cursor" is positioned before the first qualifying tuple.
  * ----------------------------------------------------------------
  */
+//TupleTableSlot **slotlist;//MYTODO
+
+TupleTableSlot **
+ExecScanListFull(ScanState *node)
+{
+	ExprContext *econtext;
+	List	   *qual;
+	ProjectionInfo *projInfo;
+	ExprDoneCond isDone;
+	TupleTableSlot *resultSlot;
+	TupleTableSlot **resultlist;
+	unsigned int actualpos;
+	unsigned int resultpos;
+	TupleTableSlot *slot;
+
+	TupleTableSlot **slotlist;//Taras: [MYTODO] soll return überleben, denn es enthaelt noch nicht verarbeitete Tupel
 
 
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
 
+	/*
+	 * Fetch data from node
+	 */
+	qual = node->ps.qual;
+	projInfo = node->ps.ps_ProjInfo;
+	econtext = node->ps.ps_ExprContext;
+
+	 resultpos = mybuffersize;
+	 actualpos = node->actualpos;
+	 resultlist = node->resultlist;
+	 slotlist = node->ss_ScanTupleSlotList;
+
+	/*
+	 * If we have neither a qual to check nor a projection to do, just skip
+	 * all the overhead and return the raw scan tuple.
+	 */
+	if (!qual && !projInfo)
+	{
+		ResetExprContext(econtext);
+		//return ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+		SeqNextListFull(node);
+		return slotlist;
+	}
+
+
+	/*
+	 * Reset per-tuple memory context to free any expression evaluation
+	 * storage allocated in the previous tuple cycle.  Note this can't happen
+	 * until we're done projecting out tuples from a scan tuple.
+	 */
+	ResetExprContext(econtext);
+
+	/*
+	 * get a tuple from the access method.  Loop until we obtain a tuple that
+	 * passes the qualification.
+	 */
+	for (;;)
+	{
+
+
+		//CHECK_FOR_INTERRUPTS();
+
+		if(actualpos==0 || actualpos == mybuffersize){
+			//ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
+			SeqNextListFull(node);
+			//slotlist = SeqNextListQualTuple(node);
+			//slotlist = node->ss_ScanTupleSlotList;
+			actualpos = mybuffersize;
+		}
+
+		slot = slotlist[--actualpos];
+
+		/*
+		 * if the slot returned by the accessMtd contains NULL, then it means
+		 * there is nothing more to scan so we just return an empty slot,
+		 * being careful to use the projection result slot so it has correct
+		 * tupleDesc.
+		 */
+		if (TupIsNull(slot))
+		{
+			resultlist[--resultpos] = slot;
+			return resultlist;
+		}
+
+		/*
+		 * place the current tuple into the expr context
+		 */
+		econtext->ecxt_scantuple = slot;
+
+		/*
+		 * check that the current tuple satisfies the qual-clause
+		 *
+		 * check for non-nil qual here to avoid a function call to ExecQual()
+		 * when the qual is nil ... saves only a few cycles, but they add up
+		 * ...
+		 */
+		if (!qual || ExecQual(qual, econtext, false))
+		{
+			/*
+			 * Found a satisfactory scan tuple.
+			 */
+			if (projInfo)
+			{
+				/*
+				 * Form a projection tuple, store it in the result tuple slot
+				 * and return it --- unless we find we can project no tuples
+				 * from this scan tuple, in which case continue scan.
+				 */
+				resultSlot = ExecProjectBuffer(projInfo, &isDone,--resultpos);
+				resultlist[resultpos] = resultSlot;
+			}
+			else
+			{
+				/*
+				 * Here, we aren't projecting, so just return scan tuple.
+				 */
+				slot->qual = 1;
+				resultlist[--resultpos] = slot;
+			}
+		}else{
+			InstrCountFiltered1(node, 1);
+		}
+
+		if(resultpos==0){
+			node->actualpos = actualpos;
+			return resultlist;
+		}
+
+		/*
+		 * Tuple fails qual, so free per-tuple memory and try again.
+		 */
+		ResetExprContext(econtext);
+	}
+	return resultlist;
+}
+
+//TupleTableSlot **slotlist; //siehe oben
 TupleTableSlot **
 ExecScanListQualTuple(ScanState *node)
 {
@@ -146,6 +281,7 @@ ExecScanListQualTuple(ScanState *node)
 	 resultpos = mybuffersize;
 	 actualpos = node->actualpos;
 	 resultlist = node->resultlist;
+	 slotlist = node->ss_ScanTupleSlotList;
 
 	/*
 	 * If we have neither a qual to check nor a projection to do, just skip
@@ -156,7 +292,7 @@ ExecScanListQualTuple(ScanState *node)
 		ResetExprContext(econtext);
 		//return ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
 		SeqNextListQualTuple(node);
-		return node->ss_ScanTupleSlotList;
+		return slotlist;
 	}
 
 
@@ -181,7 +317,7 @@ ExecScanListQualTuple(ScanState *node)
 			//ExecScanFetchListQualTuple(node, accessMtd, recheckMtd);
 			SeqNextListQualTuple(node);
 			//slotlist = SeqNextListQualTuple(node);
-			slotlist = node->ss_ScanTupleSlotList;
+			//slotlist = node->ss_ScanTupleSlotList;
 			actualpos = mybuffersize;
 		}
 

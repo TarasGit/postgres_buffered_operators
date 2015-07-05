@@ -225,9 +225,15 @@ extern PlanState *ExecInitNode(Plan *node, EState *estate, int eflags);
 extern TupleTableSlot *ExecProcNode(PlanState *node);
 extern TupleTableSlot **ExecProcNodeListQualTuple(PlanState *node);//Taras: added
 
+extern TupleTableSlot **ExecProcNodeListFull(PlanState *node);//Taras: added
+
+
 extern Node *MultiExecProcNode(PlanState *node);
 
 extern Node *MultiExecProcNodeListQualTuple(PlanState *node);
+extern Node *MultiExecProcNodeListFull(PlanState *node);
+
+
 
 extern void ExecEndNode(PlanState *node);
 
@@ -266,6 +272,7 @@ extern TupleTableSlot *ExecScan(ScanState *node, ExecScanAccessMtd accessMtd,
 		 ExecScanRecheckMtd recheckMtd);
 
 extern TupleTableSlot **ExecScanListQualTuple(ScanState *node);//Taras: added
+extern TupleTableSlot **ExecScanListFull(ScanState *node);//Taras: added
 
 
 extern TupleTableSlot ** ExecScanFetchListQualTuple(ScanState *node,//TAras: added

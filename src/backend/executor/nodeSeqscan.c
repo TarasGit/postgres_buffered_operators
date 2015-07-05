@@ -43,6 +43,65 @@ static TupleTableSlot *SeqNext(SeqScanState *node);
  * ----------------------------------------------------------------
  */
 
+
+void
+SeqNextListFull(SeqScanState *node)
+{
+	HeapTuple	tuple;
+	HeapScanDesc scandesc;
+	EState	   *estate;
+	ScanDirection direction;
+	//TupleTableSlot *slot;
+	TupleTableSlot **slotlist;
+
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+	int sizectup = sizeof(scandesc->rs_ctup);
+
+
+	/*
+	 * get information from the estate and scan state
+	 */
+	scandesc = node->ss_currentScanDesc;
+	estate = node->ps.state;
+	direction = estate->es_direction;
+	//slot = node->ss_ScanTupleSlot;
+	slotlist = node->ss_ScanTupleSlotList;
+
+	for(i=mybuffersize;i--;){
+	/*
+	 * get the next tuple from the table
+	 */
+	//tuple = heap_getnext(scandesc, direction);
+	tuple = heap_getnextBuffer(scandesc,direction,i);
+
+	//memcpy(&scandesc->rs_ctuplist[i],&scandesc->rs_ctup, sizectup);//Taras: what is faster memcpy or memmove ???[MYTODO]
+
+
+	/*
+	 * save the tuple and the buffer returned to us by the access methods in
+	 * our scan tuple slot and return the slot.  Note: we pass 'false' because
+	 * tuples returned by heap_getnext() are pointers onto disk pages and were
+	 * not created with palloc() and so should not be pfree()'d.  Note also
+	 * that ExecStoreTuple will increment the refcount of the buffer; the
+	 * refcount will not be dropped until the tuple table slot is cleared.
+	 */
+		if (tuple){
+			ExecStoreTuple(&scandesc->rs_ctuplist[i],	/* tuple to store */
+					   slotlist[i],	/* slot to store in */
+					   scandesc->rs_cbuf,		/* buffer associated with this
+												 * tuple */
+					   false);	/* don't pfree this pointer */
+
+		}else{
+			ExecClearTuple(slotlist[i]);
+			break;
+		}
+	}
+}
+
+
 void
 SeqNextListQualTuple(SeqScanState *node)
 {
@@ -72,10 +131,11 @@ SeqNextListQualTuple(SeqScanState *node)
 	/*
 	 * get the next tuple from the table
 	 */
-	tuple = heap_getnext(scandesc, direction);
+//	tuple = heap_getnext(scandesc, direction);
+	tuple = heap_getnextBuffer(scandesc,direction,i);
 
 
-	memcpy(&scandesc->rs_ctuplist[i],&scandesc->rs_ctup, sizectup);//Taras: what is faster memcpy or memmove ???[MYTODO]
+	//memcpy(&scandesc->rs_ctuplist[i],&scandesc->rs_ctup, sizectup);//Taras: what is faster memcpy or memmove ???[MYTODO]
 
 	slotlist[i]->qual = 1;
 	/*

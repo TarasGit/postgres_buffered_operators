@@ -23,6 +23,9 @@ extern TupleTableSlot **ExecSeqScanListQualTuple(SeqScanState *node);//Taras: ad
 
 extern void SeqNextListQualTuple(SeqScanState *node);//Taras: added
 
+extern void SeqNextListFull(SeqScanState *node);//Taras: added
+
+
 extern void ExecEndSeqScan(SeqScanState *node);
 extern void ExecReScanSeqScan(SeqScanState *node);
 

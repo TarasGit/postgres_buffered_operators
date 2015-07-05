@@ -350,6 +350,57 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  */
 
  TupleTableSlot **
+ ExecProcNodeListFull(PlanState *node)
+ {
+ 	TupleTableSlot **resultlist;
+ 	extern int mybuffer_size;
+
+ 	CHECK_FOR_INTERRUPTS();
+
+ 	if (node->chgParam != NULL) /* something changed */
+ 		ExecReScan(node);		/* let ReScan handle this */
+
+ 	if (node->instrument)
+ 		InstrStartNode(node->instrument);
+
+ 	switch (nodeTag(node))
+ 	{
+ 		case T_SeqScanState:
+ 			resultlist = ExecScanListFull((SeqScanState *) node);
+ 			break;
+ 		case T_HashJoinState:
+ 			resultlist = ExecHashJoinListFull((HashJoinState *) node);
+ 			break;
+
+ 		case T_SortState:
+ 			resultlist = ExecSort((SortState *) node);
+ 			break;
+
+ 		case T_GroupState:
+ 			resultlist = ExecGroup((GroupState *) node);
+ 			break;
+
+ 		case T_AggState:
+ 			resultlist = ExecAggListFull((AggState *) node);
+ 			break;
+
+ 		case T_HashState:
+ 			resultlist = ExecHash((HashState *) node);
+ 			break;
+
+  		default:
+ 			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(node));
+ 			resultlist = NULL;
+ 			break;
+ 	}
+
+ 	if (node->instrument)
+ 		InstrStopNode(node->instrument, TupIsNull(resultlist[0]) ? 0.0 : mybuffer_size);
+
+ 	return resultlist;
+ }
+
+ TupleTableSlot **
  ExecProcNodeListQualTuple(PlanState *node)
  {
  	TupleTableSlot **resultlist;
@@ -580,6 +631,35 @@ ExecProcNode(PlanState *node) //Taras: original - shall not change
  * ----------------------------------------------------------------
  */
 
+
+Node *
+MultiExecProcNodeListFull(PlanState *node)
+{
+	Node	   *result;
+
+	CHECK_FOR_INTERRUPTS();
+
+	if (node->chgParam != NULL) /* something changed */
+		ExecReScan(node);		/* let ReScan handle this */
+
+	switch (nodeTag(node))
+	{
+			/*
+			 * Only node types that actually support multiexec will be listed
+			 */
+
+		case T_HashState:
+			result = MultiExecHashListFull((HashState *) node);
+			break;
+
+		default:
+			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(node));
+			result = NULL;
+			break;
+	}
+
+	return result;
+}
 
 Node *
 MultiExecProcNodeListQualTuple(PlanState *node)

@@ -22,6 +22,9 @@ extern Node *MultiExecHash(HashState *node);
 
 extern Node *MultiExecHashListQualTuple(HashState *node);//Taras: added
 
+extern Node *MultiExecHashListFull(HashState *node);//Taras: added
+
+
 extern void ExecEndHash(HashState *node);
 extern void ExecReScanHash(HashState *node);
 
