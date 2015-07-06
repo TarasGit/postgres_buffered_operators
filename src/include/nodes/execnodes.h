@@ -1773,6 +1773,7 @@ typedef struct AggState
 	List	   *hash_needed;	/* list of columns needed in hash table */
 	bool		table_filled;	/* hash table filled yet? */
 	TupleHashIterator hashiter; /* for iterating through hash table */
+	TupleTableSlot** resultlist; //Taras: added
 } AggState;
 
 /* ----------------

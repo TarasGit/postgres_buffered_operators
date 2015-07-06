@@ -432,7 +432,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  			break;
 
  		case T_AggState:
- 			resultlist = ExecAgg((AggState *) node);
+ 			resultlist = ExecAggListQualTuple((AggState *) node);
  			break;
 
  		case T_HashState:

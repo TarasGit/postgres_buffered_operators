@@ -959,8 +959,8 @@ PortalRunSelect(Portal portal,
 				portal->atEnd = true;	/* we retrieved 'em all */
 			oldPos = portal->portalPos;
 			portal->portalPos += nprocessed;
-			/* portalPos doesn't advance when we fall off the end */
 			if (portal->portalPos < oldPos)
+			/* portalPos doesn't advance when we fall off the end */
 				portal->posOverflow = true;
 		}
 	}
