@@ -286,6 +286,7 @@ void
 standard_ExecutorRun(QueryDesc *queryDesc,
 					 ScanDirection direction, long count)
 {
+	extern int myexecuteplan; //Taras: case 0: buffer with tts->qual, case 1: buffer without tts->qual, fill only qual tuples, case 3: original
 	EState	   *estate;
 	CmdType		operation;
 	DestReceiver *dest;
@@ -330,8 +331,7 @@ standard_ExecutorRun(QueryDesc *queryDesc,
 	/*
 	 * run plan
 	 */
-	/*extern*/ int buffer_version=1; //Taras: case 0: buffer with tts->qual, case 1: buffer without tts->qual, fill only qual tuples, case 3: original
-	switch(buffer_version){
+	switch(myexecuteplan){
 	case 0:
 		if (!ScanDirectionIsNoMovement(direction))
 			ExecutePlanListQualTuple(estate,

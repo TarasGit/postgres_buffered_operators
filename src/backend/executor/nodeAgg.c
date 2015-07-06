@@ -2200,7 +2200,7 @@ agg_retrieve_hash_table_listfull(AggState *aggstate)
 		{
 			/* No more entries in hashtable, so done */
 			aggstate->agg_done = TRUE;
-			resultlist[--aggresultpos]->tts_isempty = 1;//Taras: setzte auf Leer
+			resultlist[--aggresultpos] = aggstate->ss.ps.ps_ResultTupleSlot;//Taras: setzte auf Leer
 			return resultlist;
 		}
 

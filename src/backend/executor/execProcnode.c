@@ -373,20 +373,17 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  			break;
 
  		case T_SortState:
- 			resultlist = ExecSort((SortState *) node);
+ 			resultlist = ExecSortListFull((SortState *) node);
  			break;
 
  		case T_GroupState:
- 			resultlist = ExecGroup((GroupState *) node);
+ 			resultlist = ExecGroupListFull((GroupState *) node);//Taras: Bugs
  			break;
 
  		case T_AggState:
  			resultlist = ExecAggListFull((AggState *) node);
  			break;
 
- 		case T_HashState:
- 			resultlist = ExecHash((HashState *) node);
- 			break;
 
   		default:
  			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(node));
@@ -424,7 +421,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  			break;
 
  		case T_SortState:
- 			resultlist = ExecSort((SortState *) node);
+ 			resultlist = ExecSortListQualTuple((SortState *) node);
  			break;
 
  		case T_GroupState:
@@ -433,10 +430,6 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 
  		case T_AggState:
  			resultlist = ExecAggListQualTuple((AggState *) node);
- 			break;
-
- 		case T_HashState:
- 			resultlist = ExecHash((HashState *) node);
  			break;
 
   		default:

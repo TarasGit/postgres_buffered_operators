@@ -18,6 +18,8 @@
 
 extern SortState *ExecInitSort(Sort *node, EState *estate, int eflags);
 extern TupleTableSlot *ExecSort(SortState *node);
+extern TupleTableSlot **ExecSortListFull(SortState *node);//Taras: added
+extern TupleTableSlot **ExecSortListQualTuple(SortState *node);//Taras: added
 extern void ExecEndSort(SortState *node);
 extern void ExecSortMarkPos(SortState *node);
 extern void ExecSortRestrPos(SortState *node);

@@ -1,0 +1,4 @@
+myexecuteplan:
+0 = Buffer mit Qual-Flags
+1 = Buffer wird voll gefüllt
+2 = PostgreSQL Original

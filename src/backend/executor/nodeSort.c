@@ -141,6 +141,270 @@ ExecSort(SortState *node)
 	return slot;
 }
 
+
+
+
+TupleTableSlot **
+ExecSortListFull(SortState *node)
+{
+	EState	   *estate;
+	ScanDirection dir;
+	Tuplesortstate *tuplesortstate;
+	TupleTableSlot *slot;
+	TupleTableSlot **slotlist;
+
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+
+	unsigned int var = 0;
+
+	/*
+	 * get state info from node
+	 */
+	SO1_printf("ExecSort: %s\n",
+			   "entering routine");
+
+	estate = node->ss.ps.state;
+	dir = estate->es_direction;
+	tuplesortstate = (Tuplesortstate *) node->tuplesortstate;
+
+	/*
+	 * If first time through, read all tuples from outer plan and pass them to
+	 * tuplesort.c. Subsequent calls just fetch tuples from tuplesort.
+	 */
+
+	if (!node->sort_Done)
+	{
+		Sort	   *plannode = (Sort *) node->ss.ps.plan;
+		PlanState  *outerNode;
+		TupleDesc	tupDesc;
+
+		SO1_printf("ExecSort: %s\n",
+				   "sorting subplan");
+
+		/*
+		 * Want to scan subplan in the forward direction while creating the
+		 * sorted data.
+		 */
+		estate->es_direction = ForwardScanDirection;
+
+		/*
+		 * Initialize tuplesort module.
+		 */
+		SO1_printf("ExecSort: %s\n",
+				   "calling tuplesort_begin");
+
+		outerNode = outerPlanState(node);
+		tupDesc = ExecGetResultType(outerNode);
+
+		tuplesortstate = tuplesort_begin_heap(tupDesc,
+											  plannode->numCols,
+											  plannode->sortColIdx,
+											  plannode->sortOperators,
+											  plannode->collations,
+											  plannode->nullsFirst,
+											  work_mem,
+											  node->randomAccess);
+		if (node->bounded)
+			tuplesort_set_bound(tuplesortstate, node->bound);
+		node->tuplesortstate = (void *) tuplesortstate;
+
+		/*
+		 * Scan the subplan and feed all the tuples to tuplesort.
+		 */
+
+		for (;;)
+		{
+			if(var == 1)
+				break;
+
+			slotlist = ExecProcNodeListFull(outerNode);
+
+			for(i=mybuffersize;i--;){
+				slot = slotlist[i];
+
+				if (TupIsNull(slot)){
+					var = 1;
+					break;
+				}
+
+				tuplesort_puttupleslot(tuplesortstate, slot);
+			}
+		}
+
+		/*
+		 * Complete the sort.
+		 */
+		tuplesort_performsort(tuplesortstate);
+
+		/*
+		 * restore to user specified direction
+		 */
+		estate->es_direction = dir;
+
+		/*
+		 * finally set the sorted flag to true
+		 */
+		node->sort_Done = true;
+		node->bounded_Done = node->bounded;
+		node->bound_Done = node->bound;
+		SO1_printf("ExecSort: %s\n", "sorting done");
+	}
+
+	SO1_printf("ExecSort: %s\n",
+			   "retrieving tuple from tuplesort");
+
+	/*
+	 * Get the first or next tuple from tuplesort. Returns NULL if no more
+	 * tuples.
+	 */
+	//slot = node->ss.ps.ps_ResultTupleSlot;
+	slotlist = node->ss.ps.ps_ResultTupleSlotList;
+
+	for(i=mybuffersize;i--;){
+		(void) tuplesort_gettupleslot(tuplesortstate, ScanDirectionIsForward(dir), slotlist[i]);
+
+		if(TupIsNull(slotlist[i]))
+			break;
+	}
+	return slotlist;
+}
+
+
+
+TupleTableSlot **
+ExecSortListQualTuple(SortState *node)
+{
+	EState	   *estate;
+	ScanDirection dir;
+	Tuplesortstate *tuplesortstate;
+	TupleTableSlot *slot;
+	TupleTableSlot **slotlist;
+
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
+	unsigned int i;
+
+	unsigned int var = 0;
+
+	/*
+	 * get state info from node
+	 */
+	SO1_printf("ExecSort: %s\n",
+			   "entering routine");
+
+	estate = node->ss.ps.state;
+	dir = estate->es_direction;
+	tuplesortstate = (Tuplesortstate *) node->tuplesortstate;
+
+	/*
+	 * If first time through, read all tuples from outer plan and pass them to
+	 * tuplesort.c. Subsequent calls just fetch tuples from tuplesort.
+	 */
+
+	if (!node->sort_Done)
+	{
+		Sort	   *plannode = (Sort *) node->ss.ps.plan;
+		PlanState  *outerNode;
+		TupleDesc	tupDesc;
+
+		SO1_printf("ExecSort: %s\n",
+				   "sorting subplan");
+
+		/*
+		 * Want to scan subplan in the forward direction while creating the
+		 * sorted data.
+		 */
+		estate->es_direction = ForwardScanDirection;
+
+		/*
+		 * Initialize tuplesort module.
+		 */
+		SO1_printf("ExecSort: %s\n",
+				   "calling tuplesort_begin");
+
+		outerNode = outerPlanState(node);
+		tupDesc = ExecGetResultType(outerNode);
+
+		tuplesortstate = tuplesort_begin_heap(tupDesc,
+											  plannode->numCols,
+											  plannode->sortColIdx,
+											  plannode->sortOperators,
+											  plannode->collations,
+											  plannode->nullsFirst,
+											  work_mem,
+											  node->randomAccess);
+		if (node->bounded)
+			tuplesort_set_bound(tuplesortstate, node->bound);
+		node->tuplesortstate = (void *) tuplesortstate;
+
+		/*
+		 * Scan the subplan and feed all the tuples to tuplesort.
+		 */
+
+		for (;;)
+		{
+			if(var == 1)
+				break;
+
+			slotlist = ExecProcNodeListFull(outerNode);
+
+			for(i=mybuffersize;i--;){
+				slot = slotlist[i];
+
+				if (TupIsNull(slot)){
+					var = 1;
+					break;
+				}
+
+				if(slot->qual==false)
+					continue;
+
+				tuplesort_puttupleslot(tuplesortstate, slot);
+			}
+		}
+
+		/*
+		 * Complete the sort.
+		 */
+		tuplesort_performsort(tuplesortstate);
+
+		/*
+		 * restore to user specified direction
+		 */
+		estate->es_direction = dir;
+
+		/*
+		 * finally set the sorted flag to true
+		 */
+		node->sort_Done = true;
+		node->bounded_Done = node->bounded;
+		node->bound_Done = node->bound;
+		SO1_printf("ExecSort: %s\n", "sorting done");
+	}
+
+	SO1_printf("ExecSort: %s\n",
+			   "retrieving tuple from tuplesort");
+
+	/*
+	 * Get the first or next tuple from tuplesort. Returns NULL if no more
+	 * tuples.
+	 */
+	//slot = node->ss.ps.ps_ResultTupleSlot;
+	slotlist = node->ss.ps.ps_ResultTupleSlotList;
+
+	for(i=mybuffersize;i--;){
+		(void) tuplesort_gettupleslot(tuplesortstate, ScanDirectionIsForward(dir), slotlist[i]);
+
+		if(TupIsNull(slotlist[i]))
+			break;
+
+		slotlist[i]->qual = true;
+	}
+	return slotlist;
+}
+
 /* ----------------------------------------------------------------
  *		ExecInitSort
  *
@@ -151,6 +415,8 @@ ExecSort(SortState *node)
 SortState *
 ExecInitSort(Sort *node, EState *estate, int eflags)
 {
+	extern int mybuffer_size;
+
 	SortState  *sortstate;
 
 	SO1_printf("ExecInitSort: %s\n",
@@ -188,7 +454,10 @@ ExecInitSort(Sort *node, EState *estate, int eflags)
 	 *
 	 * sort nodes only return scan tuples from their sorted relation.
 	 */
+	sortstate->ss.ps.ps_ResultTupleSlotList = (TupleTableSlot**)MemoryContextAllocZero(CurrentMemoryContext,sizeof(TupleTableSlot*) * mybuffer_size);
+
 	ExecInitResultTupleSlot(estate, &sortstate->ss.ps);
+	ExecInitResultTupleSlotBuffer(estate, &sortstate->ss.ps);
 	ExecInitScanTupleSlot(estate, &sortstate->ss);
 
 	/*
@@ -206,6 +475,7 @@ ExecInitSort(Sort *node, EState *estate, int eflags)
 	 * this node doesn't do projections.
 	 */
 	ExecAssignResultTypeFromTL(&sortstate->ss.ps);
+	ExecAssignResultTypeFromTLBuffer(&sortstate->ss.ps);
 	ExecAssignScanTypeFromOuterPlan(&sortstate->ss);
 	sortstate->ss.ps.ps_ProjInfo = NULL;
 

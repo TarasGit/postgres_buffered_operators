@@ -8,6 +8,6 @@ subdir = src/backend/access/mybuffer
 top_builddir = ../../../..
 include $(top_builddir)/src/Makefile.global
 
-OBJS = mybuffer.o
+OBJS = mybuffer.o myexecuteplan.o
 
 include $(top_srcdir)/src/backend/common.mk

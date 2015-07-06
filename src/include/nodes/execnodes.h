@@ -1734,6 +1734,8 @@ typedef struct GroupState
 	ScanState	ss;				/* its first field is NodeTag */
 	FmgrInfo   *eqfunctions;	/* per-field lookup data for equality fns */
 	bool		grp_done;		/* indicates completion of Group scan */
+	TupleTableSlot **resultlist;
+	unsigned int globalpos;
 } GroupState;
 
 /* ---------------------

@@ -1,5 +1,5 @@
 #!/bin/bash
-if [ $1 -l 0 ]
+if [ $1 -le -1 ]
   then 
 	echo "0=buffer with qual-flag "
 	echo "1=full buffer"
