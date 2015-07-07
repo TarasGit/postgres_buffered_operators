@@ -241,7 +241,7 @@ MultiExecHashListQualTuple(HashState *node)//Taras: added
 			}
 
 
-			if(!slot->qual)
+			if(slot->qual==false)
 				continue;
 
 
