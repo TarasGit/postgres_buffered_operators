@@ -425,7 +425,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  			break;
 
  		case T_GroupState:
- 			resultlist = ExecGroup((GroupState *) node);
+ 			resultlist = ExecGroupListQualTuple((GroupState *) node);
  			break;
 
  		case T_AggState:

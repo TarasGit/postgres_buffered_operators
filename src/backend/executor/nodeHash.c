@@ -240,8 +240,8 @@ MultiExecHashListQualTuple(HashState *node)//Taras: added
 				break;
 			}
 
-
 			if(slot->qual==false)
+
 				continue;
 
 

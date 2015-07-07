@@ -34,7 +34,7 @@
 int globalpos;
 
 TupleTableSlot **
-ExecGroupListFull(GroupState *node)
+ExecGroupListQualTuple(GroupState *node)
 {
 	ExprContext *econtext;
 	int			numCols;
@@ -200,6 +200,189 @@ ExecGroupListFull(GroupState *node)
 	}
 }
 
+
+TupleTableSlot **
+ExecGroupListFull(GroupState *node)
+{
+	ExprContext *econtext;
+	int			numCols;
+	AttrNumber *grpColIdx;
+	TupleTableSlot *firsttupleslot;
+	TupleTableSlot *outerslot;
+
+	TupleTableSlot **outerslotlist;
+	TupleTableSlot **resultlist;
+
+	extern int mybuffer_size;
+	unsigned int mybuffersize = mybuffer_size;
+
+	unsigned int resultpos = mybuffer_size;
+	unsigned int aktualpos = node->globalpos;
+
+	resultlist = node->resultlist;
+
+	/*
+	 * get state info from node
+	 */
+	if (node->grp_done)
+		return NULL;
+	econtext = node->ss.ps.ps_ExprContext;
+	numCols = ((Group *) node->ss.ps.plan)->numCols;
+	grpColIdx = ((Group *) node->ss.ps.plan)->grpColIdx;
+
+	/*
+	 * Check to see if we're still projecting out tuples from a previous group
+	 * tuple (because there is a function-returning-set in the projection
+	 * expressions).  If so, try to project another one.
+	 */
+	if (node->ss.ps.ps_TupFromTlist)
+	{
+		TupleTableSlot *result;
+		ExprDoneCond isDone;
+
+		result = ExecProject(node->ss.ps.ps_ProjInfo, &isDone);
+		if (isDone == ExprMultipleResult)
+			return result;
+		/* Done with that source tuple... */
+		node->ss.ps.ps_TupFromTlist = false;
+	}
+
+	/*
+	 * The ScanTupleSlot holds the (copied) first tuple of each group.
+	 */
+	firsttupleslot = node->ss.ss_ScanTupleSlot;
+
+	/*
+	 * We need not call ResetExprContext here because execTuplesMatch will
+	 * reset the per-tuple memory context once per input tuple.
+	 */
+
+	/*
+	 * If first time through, acquire first input tuple and determine whether
+	 * to return it or not.
+	 */
+	if (TupIsNull(firsttupleslot))
+	{
+		if(aktualpos == mybuffersize){
+		outerslotlist = ExecProcNodeListFull(outerPlanState(node));
+		}
+		outerslot = outerslotlist[--aktualpos];
+
+		if (TupIsNull(outerslot))
+		{
+			/* empty input, so return nothing */
+			node->grp_done = TRUE;
+			return NULL;
+		}
+		/* Copy tuple into firsttupleslot */
+		ExecCopySlot(firsttupleslot, outerslot);
+
+		/*
+		 * Set it up as input for qual test and projection.  The expressions
+		 * will access the input tuple as varno OUTER.
+		 */
+		econtext->ecxt_outertuple = outerslot;
+
+		/*
+		 * Check the qual (HAVING clause); if the group does not match, ignore
+		 * it and fall into scan loop.
+		 */
+		if (ExecQual(node->ss.ps.qual, econtext, false))
+		{
+			/*
+			 * Form and return a projection tuple using the first input tuple.
+			 */
+			TupleTableSlot *result;
+			ExprDoneCond isDone;
+
+			result = ExecProjectBuffer(node->ss.ps.ps_ProjInfo, &isDone,--resultpos);
+			resultlist[resultpos] = result;
+
+			if(resultpos == 0){
+				node->globalpos = aktualpos;
+				return resultlist;
+			}
+
+			//if (isDone != ExprEndResult)
+			//{
+			//	node->ss.ps.ps_TupFromTlist = (isDone == ExprMultipleResult);
+			//	return result;
+			//}
+		}
+		else
+			InstrCountFiltered1(node, 1);
+	}
+
+	/*
+	 * This loop iterates once per input tuple group.  At the head of the
+	 * loop, we have finished processing the first tuple of the group and now
+	 * need to scan over all the other group members.
+	 */
+	for (;;)
+	{
+		/*
+		 * Scan over all remaining tuples that belong to this group
+		 */
+		for (;;)
+		{
+			if(aktualpos == 0){
+			outerslotlist = ExecProcNodeListFull(outerPlanState(node));
+			aktualpos = mybuffersize;
+			}
+			outerslot = outerslotlist[--aktualpos];
+
+			if (TupIsNull(outerslot))
+			{
+				/* no more groups, so we're done */
+				node->grp_done = TRUE;
+				return resultlist;
+			}
+
+			/*
+			 * Compare with first tuple and see if this tuple is of the same
+			 * group.  If so, ignore it and keep scanning.
+			 */
+			if (!execTuplesMatch(firsttupleslot, outerslot,
+								 numCols, grpColIdx,
+								 node->eqfunctions,
+								 econtext->ecxt_per_tuple_memory))
+				break;
+		}
+
+		/*
+		 * We have the first tuple of the next input group.  See if we want to
+		 * return it.
+		 */
+		/* Copy tuple, set up as input for qual test and projection */
+		ExecCopySlot(firsttupleslot, outerslot);
+		econtext->ecxt_outertuple = firsttupleslot;
+
+		/*
+		 * Check the qual (HAVING clause); if the group does not match, ignore
+		 * it and loop back to scan the rest of the group.
+		 */
+		if (ExecQual(node->ss.ps.qual, econtext, false))
+		{
+			/*
+			 * Form and return a projection tuple using the first input tuple.
+			 */
+			TupleTableSlot *result;
+			ExprDoneCond isDone;
+
+			result = ExecProjectBuffer(node->ss.ps.ps_ProjInfo, &isDone,--resultpos);
+			resultlist[resultpos] = result;
+
+			if(resultpos == 0){
+				node->globalpos = aktualpos;
+				return resultlist;
+			}
+
+
+		}
+		else
+			InstrCountFiltered1(node, 1);
+	}
+}
 
 TupleTableSlot *
 ExecGroup(GroupState *node)
