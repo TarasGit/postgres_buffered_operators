@@ -98,6 +98,8 @@ SeqNextListFull(SeqScanState *node)
 			ExecClearTuple(slotlist[i]);
 			break;
 		}
+		slot_getallattrs(slotlist[i]);
+
 	}
 }
 

@@ -1252,6 +1252,9 @@ agg_retrieve_direct_qualtuple(AggState *aggstate)
 						slotlist = ExecProcNodeListFull(outerPlan);
 						pos = mybuffersize;
 				}
+
+
+
 				outerslot = slotlist[--pos];
 				if (!TupIsNull(outerslot))
 				{
@@ -1329,6 +1332,13 @@ agg_retrieve_direct_qualtuple(AggState *aggstate)
 				slotlist = ExecProcNodeListFull(outerPlan);
 				pos = mybuffersize;
 				}
+
+				if(slotlist == (void*)0){
+					aggstate->agg_done = true;
+					break;
+				}
+
+
 				outerslot = slotlist[--pos];//4,3
 				if (TupIsNull(outerslot))
 				{
@@ -1489,7 +1499,10 @@ agg_retrieve_direct_listfull(AggState *aggstate)
 		 */
 		if (aggstate->grp_firstTuple == NULL)
 		{
-			slotlist = ExecProcNodeListFull(outerPlan);
+			slotlist = ExecProcNodeListFull(outerPlan);//Taras: [MYTODO] hashjoin can return NULL
+
+
+
 			outerslot = slotlist[--pos];
 			if (!TupIsNull(outerslot))
 			{
@@ -1560,6 +1573,13 @@ agg_retrieve_direct_listfull(AggState *aggstate)
 				slotlist = ExecProcNodeListFull(outerPlan);
 				pos = mybuffersize;
 				}
+
+				if(slotlist == (void*)0){
+					aggstate->agg_done = true;
+					break;
+				}
+
+
 				outerslot = slotlist[--pos];//4,3
 				if (TupIsNull(outerslot))
 				{

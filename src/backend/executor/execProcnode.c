@@ -386,7 +386,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
 
 
   		default:
- 			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(node));
+ 			elog(ERROR, "This Operator is not supported in buffered Version: %d", (int) nodeTag(node));
  			resultlist = NULL;
  			break;
  	}
@@ -433,7 +433,7 @@ ExecInitNode(Plan *node, EState *estate, int eflags)
  			break;
 
   		default:
- 			elog(ERROR, "unrecognized node type: %d", (int) nodeTag(node));
+ 			elog(ERROR, "This Operator is not supported in buffered Version: %d", (int) nodeTag(node));
  			resultlist = NULL;
  			break;
  	}
