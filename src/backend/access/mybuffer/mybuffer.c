@@ -1,1 +1,1 @@
-int mybuffer_size  = 2;
+int mybuffer_size  = 1024;

@@ -627,8 +627,13 @@ ExecHashJoinListFull(HashJoinState *node) //Taras: original - shall not change
 						ExecPrepHashTableForUnmatched(node);
 						node->hj_JoinState = HJ_FILL_INNER_TUPLES;
 					}
-					else
+					else{
 						node->hj_JoinState = HJ_NEED_NEW_BATCH;
+						for(;resultpos--;)
+							resultlist[resultpos] = NULL;
+
+						return resultlist;
+					}
 					continue;
 				}
 
@@ -724,6 +729,8 @@ ExecHashJoinListFull(HashJoinState *node) //Taras: original - shall not change
 						ExecQual(otherqual, econtext, false))
 					{
 						TupleTableSlot *result;
+
+						node->hj_JoinState = HJ_NEED_NEW_OUTER;
 
 						result = ExecProjectBuffer(node->js.ps.ps_ProjInfo, &isDone,--resultpos);
 						resultlist[resultpos] = result;
