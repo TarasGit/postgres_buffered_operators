@@ -31,8 +31,6 @@
  *
  *		Return one tuple for each group of matching input tuples.
  */
-int globalpos;
-
 TupleTableSlot **
 ExecGroupListQualTuple(GroupState *node)
 {
@@ -41,28 +39,43 @@ ExecGroupListQualTuple(GroupState *node)
 	AttrNumber *grpColIdx;
 	TupleTableSlot *firsttupleslot;
 	TupleTableSlot *outerslot;
-	TupleTableSlot **outerslotlist;
-	//unsigned int globalpos;
 
-	TupleTableSlot **resultlist = node->resultlist;
+	TupleTableSlot **outerslotlist;
+	TupleTableSlot **resultlist;
 
 	extern int mybuffer_size;
 	unsigned int mybuffersize = mybuffer_size;
 
-	unsigned int resultpos = mybuffersize;
-	unsigned int aktualpos = mybuffersize;
-	//globalpos = node->globalpos;
+	unsigned int resultpos = mybuffer_size;
+	unsigned int aktualpos = node->globalpos;
+
+	resultlist = node->resultlist;
+
 	/*
 	 * get state info from node
 	 */
-	if (node->grp_done){
-		resultlist[mybuffersize-1] = NULL;
-		return resultlist;
-	}
+	if (node->grp_done)
+		return NULL;
 	econtext = node->ss.ps.ps_ExprContext;
 	numCols = ((Group *) node->ss.ps.plan)->numCols;
 	grpColIdx = ((Group *) node->ss.ps.plan)->grpColIdx;
 
+	/*
+	 * Check to see if we're still projecting out tuples from a previous group
+	 * tuple (because there is a function-returning-set in the projection
+	 * expressions).  If so, try to project another one.
+	 */
+	if (node->ss.ps.ps_TupFromTlist)
+	{
+		TupleTableSlot *result;
+		ExprDoneCond isDone;
+
+		result = ExecProject(node->ss.ps.ps_ProjInfo, &isDone);
+		if (isDone == ExprMultipleResult)
+			return result;
+		/* Done with that source tuple... */
+		node->ss.ps.ps_TupFromTlist = false;
+	}
 
 	/*
 	 * The ScanTupleSlot holds the (copied) first tuple of each group.
@@ -80,9 +93,11 @@ ExecGroupListQualTuple(GroupState *node)
 	 */
 	if (TupIsNull(firsttupleslot))
 	{
+		if(aktualpos == mybuffersize){
 		outerslotlist = ExecProcNodeListFull(outerPlanState(node));
-
+		}
 		outerslot = outerslotlist[--aktualpos];
+
 		if (TupIsNull(outerslot))
 		{
 			/* empty input, so return nothing */
@@ -96,13 +111,13 @@ ExecGroupListQualTuple(GroupState *node)
 		 * Set it up as input for qual test and projection.  The expressions
 		 * will access the input tuple as varno OUTER.
 		 */
-		econtext->ecxt_outertuple = firsttupleslot;
+		econtext->ecxt_outertuple = outerslot;
 
 		/*
 		 * Check the qual (HAVING clause); if the group does not match, ignore
 		 * it and fall into scan loop.
 		 */
-		if (ExecQual(node->ss.ps.qual, econtext, false))
+		if (outerslot->qual == true && ExecQual(node->ss.ps.qual, econtext, false))
 		{
 			/*
 			 * Form and return a projection tuple using the first input tuple.
@@ -114,9 +129,15 @@ ExecGroupListQualTuple(GroupState *node)
 			resultlist[resultpos] = result;
 
 			if(resultpos == 0){
-				globalpos = aktualpos;
+				node->globalpos = aktualpos;
 				return resultlist;
 			}
+
+			//if (isDone != ExprEndResult)
+			//{
+			//	node->ss.ps.ps_TupFromTlist = (isDone == ExprMultipleResult);
+			//	return result;
+			//}
 		}
 		else
 			InstrCountFiltered1(node, 1);
@@ -127,13 +148,6 @@ ExecGroupListQualTuple(GroupState *node)
 	 * loop, we have finished processing the first tuple of the group and now
 	 * need to scan over all the other group members.
 	 */
-
-	if(globalpos != 0 && globalpos != mybuffersize-1)
-		aktualpos = globalpos;
-
-	if(aktualpos == mybuffersize)//Taras: wtf?
-		aktualpos = 0;
-
 	for (;;)
 	{
 		/*
@@ -143,7 +157,6 @@ ExecGroupListQualTuple(GroupState *node)
 		{
 			if(aktualpos == 0){
 				outerslotlist = ExecProcNodeListFull(outerPlanState(node));
-				globalpos = 0;
 				aktualpos = mybuffersize;
 			}
 			outerslot = outerslotlist[--aktualpos];
@@ -152,9 +165,10 @@ ExecGroupListQualTuple(GroupState *node)
 			{
 				/* no more groups, so we're done */
 				node->grp_done = TRUE;
-				resultlist[--resultpos] = NULL;
 				return resultlist;
 			}
+			if(outerslot->qual == false)
+				continue;
 
 			/*
 			 * Compare with first tuple and see if this tuple is of the same
@@ -191,15 +205,16 @@ ExecGroupListQualTuple(GroupState *node)
 			resultlist[resultpos] = result;
 
 			if(resultpos == 0){
-				globalpos = aktualpos;
+				node->globalpos = aktualpos;
 				return resultlist;
 			}
+
+
 		}
 		else
 			InstrCountFiltered1(node, 1);
 	}
 }
-
 
 TupleTableSlot **
 ExecGroupListFull(GroupState *node)
