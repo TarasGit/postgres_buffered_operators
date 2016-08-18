@@ -1,4 +1,4 @@
-#1.Change Buffer Size for ScanNode - works only for select *
+#1.Change Buffer Size *
 /src/backend/access/mybuffer/mybuffer.c
 
 #2.Configure project
