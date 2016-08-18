@@ -1,4 +1,4 @@
-#1.Change Buffer Size *
+#1.Change Buffer Size to n in:
 /src/backend/access/mybuffer/mybuffer.c
 
 #2.Configure project
